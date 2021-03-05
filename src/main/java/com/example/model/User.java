@@ -9,6 +9,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.Email;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity // This tells Hibernate to make a table out of this class
 public class User {
   @Id
@@ -23,11 +25,20 @@ public class User {
   @Column(unique = true)
   private String email;
 
+  @JsonIgnore
   private String password;
 
   @ManyToOne
   @JoinColumn(name ="role_id")
   private Role role;
+
+  public Role getRole() {
+    return this.role;
+  }
+
+  public void setRole(Role role) {
+    this.role = role;
+  }
 
   public Integer getId() {
     return this.id;
