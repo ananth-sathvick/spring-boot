@@ -26,10 +26,6 @@ public class Category {
         return this.expenseList;
     }
 
-    // public void addExpense(Expense expense) {
-    //     expenseList.add(expense);
-    // }
-
     public void setExpenseList(List<Expense> expenseList) {
         this.expenseList = expenseList;
     }
