@@ -1,5 +1,6 @@
 package com.example.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -11,7 +12,7 @@ public class Role {
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Integer id;
 
-
+    @Column(unique = true)
     private String roleName;
 
 
