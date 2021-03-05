@@ -1,4 +1,4 @@
-package com.example.restservice;
+package com.example;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -7,7 +7,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-@ComponentScan({ "com.example.controller","com.example.service" })
+@ComponentScan({ "com.example.config","com.example.controller","com.example.model","com.example.repository","com.example.service" })
 @EntityScan("com.example.model")
 @EnableJpaRepositories("com.example.repository")
 public class RestServiceApplication {

@@ -1,48 +1,77 @@
 package com.example.controller;
 
+import com.example.config.TokenProvider;
+import com.example.model.AuthToken;
+import com.example.model.LoginUser;
 import com.example.model.User;
+import com.example.model.UserDto;
 import com.example.repository.UserRepository;
-import com.example.service.EmailService;
+import com.example.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
-@Controller // This means that this class is a Controller
-@RequestMapping(path = "/demo") // This means URL's start with /demo (after Application path)
+@CrossOrigin(origins = "*", maxAge = 3600)
+@RestController
+@RequestMapping("/users")
 public class UserController {
-  @Autowired // This means to get the bean called userRepository // Which is auto-generated
-             // by Spring, we will use it to handle the data
-  private UserRepository userRepository;
 
-  @PostMapping(path = "/add") // Map ONLY POST Requests
-  public @ResponseBody String addNewUser(@RequestBody User user) {
-    // @ResponseBody means the returned String is the response, not a view name
-    // @RequestParam means it is a parameter from the GET or POST request
-
-    userRepository.save(user);
-    return "Saved";
-  }
-
-  @GetMapping(path = "/all")
-  public @ResponseBody Iterable<User> getAllUsers() {
-    // This returns a JSON or XML with the users
-    return userRepository.findAll();
-  }
-
-  // This is how to use email service 
   @Autowired
-  EmailService emailService;
+  private AuthenticationManager authenticationManager;
 
-  @GetMapping(path = "/testmail")
-  public @ResponseBody String sendMail() {
+  @Autowired
+  private TokenProvider jwtTokenUtil;
 
-    emailService.sendEmail("admin.expense-tracker@accolitedigital.com","ananthsathvick@gmail.com","Test email","<h1>Test email</h1>");
-    return "Sent";
+  @Autowired
+  private UserService userService;
+
+  @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
+  public ResponseEntity<?> generateToken(@RequestBody LoginUser loginUser) throws AuthenticationException {
+
+      final Authentication authentication = authenticationManager.authenticate(
+              new UsernamePasswordAuthenticationToken(
+                      loginUser.getUsername(),
+                      loginUser.getPassword()
+              )
+      );
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+      final String token = jwtTokenUtil.generateToken(authentication);
+      return ResponseEntity.ok(new AuthToken(token));
   }
-  //Email service end
+
+  @RequestMapping(value="/register", method = RequestMethod.POST)
+  public User saveUser(@RequestBody UserDto user){
+      return userService.save(user);
+  }
+
+
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @RequestMapping(value="/adminping", method = RequestMethod.GET)
+  public String adminPing(){
+      return "Only Admins Can Read This";
+  }
+  
+  @Autowired
+  UserRepository userRepository;
+  @PreAuthorize("hasRole('USER')")
+  @RequestMapping(value="/userping", method = RequestMethod.GET)
+  public @ResponseBody User userPing(){
+    UserDetails userDetails = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    String username = userDetails.getUsername();
+    
+    User user = userRepository.findByEmail(username);
+    return user;
+  }
+
+  
+
 }

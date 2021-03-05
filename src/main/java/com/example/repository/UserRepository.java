@@ -7,5 +7,5 @@ import com.example.model.User;
 // CRUD refers Create, Read, Update, Delete
 
 public interface UserRepository extends CrudRepository<User, Integer> {
-
+    User findByEmail(String username);
 }
