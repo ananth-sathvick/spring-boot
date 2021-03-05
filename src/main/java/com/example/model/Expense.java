@@ -4,7 +4,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import java.sql.Date;
@@ -19,9 +18,12 @@ public class Expense {
 
     private Date date;
 
+    // @ManyToOne
+    // @JoinColumn
+    // private User user;
+
     @ManyToOne
-    @JoinColumn
-    private User user;
+    private Category category;
 
     public Integer getId() {
         return this.id;
@@ -47,12 +49,20 @@ public class Expense {
         this.date = date;
     }
 
-    public User getUser() {
-        return this.user;
+    // public User getUser() {
+    //     return this.user;
+    // }
+
+    // public void setUser(User user) {
+    //     this.user = user;
+    // }
+
+    public Category getCategory() {
+        return this.category;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="com.example.restservice.GreetingControllerTests" time="5.527" tests="2" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="com.example.restservice.GreetingControllerTests" time="5.657" tests="2" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="13"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
@@ -20,7 +20,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="localRepository" value="/home/swax/.m2/repository"/>
     <property name="sun.boot.library.path" value="/usr/lib/jvm/java-13-openjdk-amd64/lib"/>
-    <property name="sun.java.command" value="/home/swax/projects/Accolite Project/spring-boot/target/surefire/surefirebooter14293558589792828946.jar /home/swax/projects/Accolite Project/spring-boot/target/surefire 2021-03-04T20-57-54_602-jvmRun1 surefire1171691359448168445tmp surefire_09964542490703642695tmp"/>
+    <property name="sun.java.command" value="/home/swax/projects/Accolite Project/spring-boot/target/surefire/surefirebooter7020360617861634397.jar /home/swax/projects/Accolite Project/spring-boot/target/surefire 2021-03-04T21-08-44_372-jvmRun1 surefire14784996859966742876tmp surefire_016324175899485633982tmp"/>
     <property name="java.vendor.url.bug" value="Unknown"/>
     <property name="java.io.tmpdir" value="/tmp"/>
     <property name="jdk.debug" value="release"/>
@@ -47,8 +47,8 @@
     <property name="java.vm.version" value="13.0.4+8-Ubuntu-120.04"/>
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="57.0"/>
-    <property name="surefire.real.class.path" value="/home/swax/projects/Accolite Project/spring-boot/target/surefire/surefirebooter14293558589792828946.jar"/>
+    <property name="surefire.real.class.path" value="/home/swax/projects/Accolite Project/spring-boot/target/surefire/surefirebooter7020360617861634397.jar"/>
   </properties>
-  <testcase name="noParamGreetingShouldReturnDefaultMessage" classname="com.example.restservice.GreetingControllerTests" time="0.336"/>
-  <testcase name="paramGreetingShouldReturnTailoredMessage" classname="com.example.restservice.GreetingControllerTests" time="0.021"/>
+  <testcase name="noParamGreetingShouldReturnDefaultMessage" classname="com.example.restservice.GreetingControllerTests" time="0.322"/>
+  <testcase name="paramGreetingShouldReturnTailoredMessage" classname="com.example.restservice.GreetingControllerTests" time="0.017"/>
 </testsuite>
