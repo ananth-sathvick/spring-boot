@@ -13,6 +13,8 @@ import javax.persistence.OneToMany;
 import javax.validation.constraints.Email;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 @Entity // This tells Hibernate to make a table out of this class
 public class User {
@@ -28,7 +30,7 @@ public class User {
   @Column(unique = true)
   private String email;
 
-  @JsonIgnore
+  @JsonProperty(access = Access.WRITE_ONLY)
   private String password;
 
   @ManyToOne
@@ -94,6 +96,5 @@ public class User {
   public void setPassword(String password) {
     this.password = password;
   }
-
   
 }

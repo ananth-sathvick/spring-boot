@@ -6,6 +6,7 @@ import com.example.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,18 +38,21 @@ public class CategoryController {
             return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 	}
 	
+    @PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/add")
 	public ResponseEntity<Category> addCategory(@RequestBody Category category){
 		Category newCategory = categoryRepository.save(category);
 		return new ResponseEntity<>(newCategory, HttpStatus.CREATED);
 	}
 	
+    @PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/update")
 	public ResponseEntity<Category> updateCategory(@RequestBody Category category){
 		Category updateCategory = categoryRepository.save(category);
 		return new ResponseEntity<>(updateCategory, HttpStatus.OK);
 	}
 	
+    @PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<?> deleteCategory(@PathVariable("id") Integer id){
         if (categoryRepository.existsById(id)) {

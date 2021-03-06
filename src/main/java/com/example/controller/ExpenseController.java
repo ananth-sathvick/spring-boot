@@ -16,6 +16,7 @@ import com.example.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller // This means that this class is a Controller
 @RequestMapping(path = "/expense") // This means URL's start with /demo (after Application path)
@@ -37,6 +39,7 @@ public class ExpenseController {
     @Autowired
     private UserRepository userRepository;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/all") // returns a list of all the expenses without any filter
     public ResponseEntity<Iterable<Expense>> getAllExpenses() {
         return new ResponseEntity<>(expenseRepository.findAll(), HttpStatus.OK);
@@ -47,6 +50,7 @@ public class ExpenseController {
         return new ResponseEntity<>(expenseRepository.getAllExpenseBw(d1, d2), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/findByCategory/{cid}") // returns a list of expenses logged under category with (category_id = cid)
     public ResponseEntity<Iterable<Expense>> getByCategory(@PathVariable("cid") Integer cid) {
         return new ResponseEntity<>(expenseRepository.getByCategory(cid), HttpStatus.OK);
@@ -70,7 +74,7 @@ public class ExpenseController {
             System.out.println(expense.get().getClass());
             return new ResponseEntity<>(expense.get(), HttpStatus.OK);}
         else
-            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 	}
 
 	// creates a new expense under user with (user_id = cid) and category with (category_id = cid) and returns the new expense
@@ -99,19 +103,22 @@ public class ExpenseController {
             return new ResponseEntity<>(updateExpense, HttpStatus.OK);
         }
         else
-            return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 	}
 	
 	@DeleteMapping(path = "/delete/{id}") // deletes the expense with expense_id = id 
 	public ResponseEntity<?> deleteExpense(@PathVariable("id") Integer id){
-        if (expenseRepository.existsById(id)) {
+        try{
             expenseRepository.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.OK);
         }
-        else
-		    return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+        catch(IllegalArgumentException e) {
+            throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Role Not Found", e); 
+        }
+		return new ResponseEntity<>("Successfully Deleted", HttpStatus.OK);
 	}
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/netPerUser") // returns a list all user details along with their total expenses
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerUser() {
         List<Object[]> queryResult = expenseRepository.getNetPerUser();

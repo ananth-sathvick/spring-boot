@@ -5,6 +5,8 @@ import com.example.repository.RoleRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
 @Controller // This means that this class is a Controller
@@ -22,32 +23,31 @@ public class RoleController {
              // by Spring, we will use it to handle the data
   private RoleRepository roleRepository;
 
+  @PreAuthorize("hasRole('ADMIN')")
   @PostMapping(path = "/add") // Map ONLY POST Requests
-  public @ResponseBody String addNewRole(@RequestBody Role role) {
+  public ResponseEntity<Role> addNewRole(@RequestBody Role role) {
     // @ResponseBody means the returned String is the response, not a view name
     // @RequestParam means it is a parameter from the GET or POST request
-    
-    roleRepository.save(role);
-    return "Saved";
+    return new ResponseEntity<>(roleRepository.save(role), HttpStatus.CREATED);
   }
 
   @GetMapping(path = "/all")
-  public @ResponseBody Iterable<Role> getAllRoles() {
+  public ResponseEntity<Iterable<Role>> getAllRoles() {
     // This returns a JSON or XML with the users
-    return roleRepository.findAll();
+    return new ResponseEntity<>(roleRepository.findAll(), HttpStatus.OK);
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @DeleteMapping(path = "/delete/{id}")
-  public @ResponseBody String deleteById(@PathVariable int id) {
+  public ResponseEntity<String> deleteById(@PathVariable int id) {
     try{
         roleRepository.deleteById(id);
     }
-    catch(IllegalArgumentException e)
-    {
+    catch(IllegalArgumentException e) {
         throw new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Role Not Found", e); 
     }
-    return "Successfully deleted";
+    return new ResponseEntity<>("Successfully Deleted", HttpStatus.OK);
   }
 
 }
