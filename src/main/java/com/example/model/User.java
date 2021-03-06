@@ -1,5 +1,7 @@
 package com.example.model;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -7,9 +9,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.Email;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 @Entity // This tells Hibernate to make a table out of this class
 public class User {
@@ -25,12 +30,24 @@ public class User {
   @Column(unique = true)
   private String email;
 
-  @JsonIgnore
+  @JsonProperty(access = Access.WRITE_ONLY)
   private String password;
 
   @ManyToOne
   @JoinColumn(name ="role_id")
   private Role role;
+
+  @OneToMany(mappedBy="user")
+  @JsonIgnore
+  private List<Expense> expenseList;
+
+  public List<Expense> getExpenseList() {
+    return this.expenseList;
+  }
+
+  public void setExpenseList(List<Expense> expenseList) {
+    this.expenseList = expenseList;
+  }
 
   public Role getRole() {
     return this.role;
@@ -79,6 +96,5 @@ public class User {
   public void setPassword(String password) {
     this.password = password;
   }
-
   
 }
