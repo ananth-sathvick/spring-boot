@@ -7,8 +7,13 @@ import com.example.model.User;
 import com.example.model.UserDto;
 import com.example.repository.UserRepository;
 import com.example.service.UserService;
+import com.mysql.cj.jdbc.exceptions.SQLError;
+
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -48,10 +53,16 @@ public class UserController {
   }
 
   @RequestMapping(value="/register", method = RequestMethod.POST)
-  public User saveUser(@RequestBody UserDto user){
-      return userService.save(user);
+  public User saveUser(@RequestBody UserDto user) throws SQLIntegrityConstraintViolationException{
+	  try {
+		  return userService.save(user);
+	  }
+	  catch(DataIntegrityViolationException e) {
+		  throw new SQLIntegrityConstraintViolationException("Already Registered!");
+	  }
+    	  
   }
-
+  
 
 
   @PreAuthorize("hasRole('ADMIN')")
