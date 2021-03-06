@@ -1,11 +1,16 @@
 package com.example.controller;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 import com.example.model.Category;
 import com.example.model.Expense;
+import com.example.model.User;
 import com.example.repository.ExpenseRepository;
+import com.example.repository.UserRepository;
 import com.example.repository.CategoryRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +33,9 @@ public class ExpenseController {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping(path = "/all") // returns a list of all the expenses without any filter
     public ResponseEntity<Iterable<Expense>> getAllExpenses() {
@@ -58,29 +66,40 @@ public class ExpenseController {
     @GetMapping(path = "/find/{id}") // returns the expense with expense_id = id
     public ResponseEntity<Expense> getExpenseById(@PathVariable("id") Integer id) {
         Optional<Expense> expense = expenseRepository.findById(id);
-        if(expense.isPresent())
-            return new ResponseEntity<>(expense.get(), HttpStatus.OK);
+        if(expense.isPresent()){
+            System.out.println(expense.get().getClass());
+            return new ResponseEntity<>(expense.get(), HttpStatus.OK);}
         else
             return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 	}
-	
-	@PostMapping(path = "/add/{cid}") // creates a new expense and return the new expense entity
-	public ResponseEntity<Expense> addExpense(@RequestBody Expense expense, @PathVariable("cid") Integer cid){
-        if(categoryRepository.existsById(cid)){
-            Category tcat = categoryRepository.findById(cid).get();
-            tcat.getExpenseList().add(expense);
-            expense.setCategory(tcat);
-            categoryRepository.save(tcat);
+
+	// creates a new expense under user with (user_id = cid) and category with (category_id = cid) and returns the new expense
+	@PostMapping(path = "/add/{uid}/{cid}") 
+	public ResponseEntity<Expense> addExpense(@RequestBody Expense expense, @PathVariable("uid") Integer uid, @PathVariable("cid") Integer cid){
+        if(userRepository.existsById(uid) && categoryRepository.existsById(cid)){
+            Category category = categoryRepository.findById(cid).get();
+            User user = userRepository.findById(uid).get();
+            category.getExpenseList().add(expense);
+            user.getExpenseList().add(expense);
+            expense.setCategory(category);
+            expense.setUser(user);
+            categoryRepository.save(category);
+            userRepository.save(user);
             Expense newExpense = expenseRepository.save(expense);
             return new ResponseEntity<>(newExpense, HttpStatus.CREATED);
         }
-        return new ResponseEntity<>(null, HttpStatus.CONFLICT);
+        else
+            return new ResponseEntity<>(null, HttpStatus.CONFLICT);
 	}
 	
 	@PutMapping(path = "/update") // updates an existing expense with new the values and returns the updated expense entity
 	public ResponseEntity<Expense> updateExpense(@RequestBody Expense expense){
-		Expense updateExpense = expenseRepository.save(expense);
-		return new ResponseEntity<>(updateExpense, HttpStatus.OK);
+        if(expense.getId() != null){
+            Expense updateExpense = expenseRepository.save(expense);
+            return new ResponseEntity<>(updateExpense, HttpStatus.OK);
+        }
+        else
+            return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
 	}
 	
 	@DeleteMapping(path = "/delete/{id}") // deletes the expense with expense_id = id 
@@ -89,6 +108,28 @@ public class ExpenseController {
             expenseRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.OK);
         }
-		return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+        else
+		    return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
 	}
+
+    @GetMapping(path = "/netPerUser") // returns a list all user details along with their total expenses
+    public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerUser() {
+        List<Object[]> queryResult = expenseRepository.getNetPerUser();
+        HashMap<String, String> map = new HashMap<String, String>();
+        ArrayList<HashMap<String, String>> result = new ArrayList<HashMap<String, String>>();
+        if(queryResult != null && !queryResult.isEmpty()){
+            for (Object[] object : queryResult) {
+                map.put("id", String.valueOf(object[0]));
+                map.put("fname", (String)object[1]);
+                map.put("lname", (String)object[2]);
+                map.put("email", (String)object[3]);
+                map.put("roleId", String.valueOf(object[5]));
+                map.put("netAmount", String.valueOf(object[6]));
+                result.add(map);
+                map = new HashMap<String, String>();
+            }
+        }
+        expenseRepository.getNetPerUser();
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 }

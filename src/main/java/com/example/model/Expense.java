@@ -18,9 +18,8 @@ public class Expense {
 
     private Date date;
 
-    // @ManyToOne
-    // @JoinColumn
-    // private User user;
+    @ManyToOne
+    private User user;
 
     @ManyToOne
     private Category category;
@@ -49,13 +48,13 @@ public class Expense {
         this.date = date;
     }
 
-    // public User getUser() {
-    //     return this.user;
-    // }
+    public User getUser() {
+        return this.user;
+    }
 
-    // public void setUser(User user) {
-    //     this.user = user;
-    // }
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public Category getCategory() {
         return this.category;
