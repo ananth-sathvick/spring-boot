@@ -152,19 +152,21 @@ public class ExpenseController {
 	}
 
 
-	@PutMapping(path = "/update") // updates an existing expense with new the values and returns the updated expense entity
-	public ResponseEntity<Expense> updateExpense(@RequestBody Expense expense){
+	@PutMapping(path = "/update/{cid}") // updates an existing expense with new the values and returns the updated expense entity
+	public ResponseEntity<Expense> updateExpense(@RequestBody Expense expense, @PathVariable("cid") Integer cid){
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername());
-        if(!user.getRole().getRoleName().equals("ADMIN")){
-            if(expense.getId() == null || !user.getId().equals(expense.getUser().getId()))
-                return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
+        Optional<Expense> oExpense = expenseRepository.findById(expense.getId());
+        Optional<Category> newCategory = categoryRepository.findById(cid);
+        if(oExpense.isPresent() && newCategory.isPresent()){
+            Category category = newCategory.get();
+            if(user.getRole().getRoleName().equals("ADMIN") || user.getId().equals(oExpense.get().getUser().getId())){
+                expense.setCategory(category);
+                expense.setUser(user);
+                return new ResponseEntity<>(expenseRepository.save(expense), HttpStatus.OK);
+             }
         }
-        if(expense.getId() != null){
-            Expense updateExpense = expenseRepository.save(expense);
-            return new ResponseEntity<>(updateExpense, HttpStatus.OK);
-        } else
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(null, HttpStatus.OK);
 	}
 	
 	@DeleteMapping(path = "/delete/{id}") // deletes the expense with expense_id = id 
