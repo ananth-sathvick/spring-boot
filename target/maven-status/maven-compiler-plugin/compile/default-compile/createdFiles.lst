@@ -1,16 +1,14 @@
 com/example/service/EmailService.class
 com/example/config/UnauthorizedEntryPoint.class
 com/example/model/Expense.class
-com/example/service/Impl/RoleServiceImpl.class
 com/example/repository/CategoryRepository.class
-com/example/model/UserDto.class
 com/example/config/CORSFilter.class
 com/example/repository/ExpenseRepository.class
 com/example/model/LoginUser.class
 com/example/controller/UserController.class
 com/example/RestServiceApplication.class
-com/example/service/RoleService.class
 com/example/controller/ExpenseController.class
+com/example/service/PasswordService.class
 com/example/repository/UserRepository.class
 com/example/controller/RoleController.class
 com/example/service/UserService.class
@@ -19,6 +17,7 @@ com/example/config/JwtAuthenticationFilter.class
 com/example/model/User.class
 com/example/model/AuthToken.class
 com/example/service/Impl/UserServiceImpl.class
+com/example/model/ChangePassword.class
 com/example/model/Category.class
 com/example/config/TokenProvider.class
 com/example/config/WebSecurityConfig.class

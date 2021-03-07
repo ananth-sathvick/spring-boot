@@ -11,7 +11,6 @@ import com.example.model.User;
 import com.example.repository.RoleRepository;
 import com.example.repository.UserRepository;
 import com.example.service.PasswordService;
-import com.example.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
