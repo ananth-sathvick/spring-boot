@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import java.sql.Date;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +59,10 @@ public class ExpenseController {
     @GetMapping(path = "/findByUser/{uid}") // returns a list of expenses logged under user with (user_id = uid)
     public ResponseEntity<Iterable<Expense>> findByUser(@PathVariable("uid") Integer uid) {
         return new ResponseEntity<>(expenseRepository.getByUser(uid), HttpStatus.OK);
+    	}
+    	else {
+    		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such user found!");
+    	}
     }
 
     @PreAuthorize("hasRole('ADMIN')")

@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import java.util.ArrayList;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Map;
 
 import com.example.config.TokenProvider;
@@ -15,6 +16,7 @@ import com.example.service.EmailService;
 import com.example.service.PasswordService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,6 +28,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -65,10 +68,11 @@ public class UserController {
 
   @PreAuthorize("hasRole('ADMIN')")
   @RequestMapping(value = "/register/{roleName}", method = RequestMethod.POST)
-  public ResponseEntity<User> saveUser(@RequestBody User user, @PathVariable("roleName") String roleName) {
+  public ResponseEntity<User> saveUser(@RequestBody User user, @PathVariable("roleName") String roleName)
+      throws SQLIntegrityConstraintViolationException {
     String password = passwordService.GenerateRandomPassword(7);
     Role role = roleRepository.findRoleByRoleName(roleName);
-    if(role == null){
+    if (role == null) {
       return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
     user.setPassword(bcryptEncoder.encode(password));
@@ -80,11 +84,12 @@ public class UserController {
           "<h1>Welcome to Expense Tracker</h1><h3>Hello, " + user.getFname() + " " + user.getLname()
               + "</h3><p>Please use the below login credentials to login</p>" + "<p>" + "username :" + user.getEmail()
               + "</p><p>" + "password :" + password + "</p>" + "<p>You are registered as " + roleName + "</p>");
-    } catch (Exception e) {
-      return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+    } catch (DataIntegrityViolationException e) {
+      throw new SQLIntegrityConstraintViolationException("Already Registered!");
     }
 
     return new ResponseEntity<>(userRepository.save(user), HttpStatus.CREATED);
+
   }
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -103,24 +108,27 @@ public class UserController {
 
   @PreAuthorize("hasRole('USER')")
   @RequestMapping(value = "/changepassword", method = RequestMethod.POST)
-  public ResponseEntity<String> changePassword(@RequestBody ChangePassword changePassword) {
+  public ResponseEntity<String> changePassword(@RequestBody ChangePassword changePassword)
+      throws SQLIntegrityConstraintViolationException {
     if (passwordService.changePassword(changePassword)) {
       return new ResponseEntity<>("Password Changed Successfully", HttpStatus.OK);
+    } else {
+      throw new SQLIntegrityConstraintViolationException("Current Password Incorrect!");
     }
-    return new ResponseEntity<>("Current password is incorrect", HttpStatus.BAD_REQUEST);
   }
 
   @RequestMapping(value = "/forgotpassword", method = RequestMethod.POST)
-  public ResponseEntity<String> forgotPassword(@RequestBody Map<String, Object> jsonEmail) {
+  public ResponseEntity<String> forgotPassword(@RequestBody Map<String, Object> jsonEmail){
     String email = (String) jsonEmail.get("email");
     if (passwordService.forgotPassword(email)) {
       return new ResponseEntity<>("New Password sent to your Email-Id successfully", HttpStatus.OK);
+    } else {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such user found!");
     }
-    return new ResponseEntity<>("No such user found!", HttpStatus.BAD_REQUEST);
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
-  @RequestMapping(value = "/getallusers", method = RequestMethod.GET)
+@PreAuthorize("hasRole('ADMIN')")
+@RequestMapping(value="/getallusers",method=RequestMethod.GET)
   public Iterable<User> getAllUsers() {
     return userRepository.getAll(1);
   }

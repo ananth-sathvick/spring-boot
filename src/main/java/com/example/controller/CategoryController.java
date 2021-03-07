@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -35,7 +36,7 @@ public class CategoryController {
         if(category.isPresent())
             return new ResponseEntity<>(category.get(), HttpStatus.OK);
         else
-            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+        	throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such category found!");
 	}
 	
     @PreAuthorize("hasRole('ADMIN')")
@@ -48,8 +49,13 @@ public class CategoryController {
     @PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/update")
 	public ResponseEntity<Category> updateCategory(@RequestBody Category category){
-		Category updateCategory = categoryRepository.save(category);
-		return new ResponseEntity<>(updateCategory, HttpStatus.OK);
+    	try {
+			Category updateCategory = categoryRepository.save(category);
+			return new ResponseEntity<>(updateCategory, HttpStatus.OK);
+    	}
+    	catch(IllegalArgumentException e) {
+    		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such category found!");
+    	}
 	}
 	
     @PreAuthorize("hasRole('ADMIN')")
@@ -59,6 +65,9 @@ public class CategoryController {
             categoryRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.OK);
         }
-		return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+        else
+        {
+    		throw new ResponseStatusException(HttpStatus.NOT_MODIFIED, "No such category found!");
+        }
 	}
 }
