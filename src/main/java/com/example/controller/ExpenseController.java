@@ -95,11 +95,11 @@ public class ExpenseController {
     }
 
     @GetMapping(path = "/findBy/{cid}") // returns a list of expenses logged under category with (category_id = cid)
-    public ResponseEntity<Iterable<Expense>> findByCategory(@PathVariable("cid") Integer cid) {
+    public ResponseEntity<Iterable<Expense>> findByCategory(@PathVariable("cid") String cid) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername());
         return new ResponseEntity<>(expenseRepository.getByUserCategory(
-            String.valueOf(user.getId()), String.valueOf(cid)), HttpStatus.OK
+            String.valueOf(user.getId()), cid), HttpStatus.OK
         );
     }
 
@@ -173,15 +173,12 @@ public class ExpenseController {
         User user = userRepository.findByEmail(userDetails.getUsername());
         Optional<Expense> oexpense = expenseRepository.findById(id);
         if(oexpense.isPresent()){
-            if(user.getRole().getRoleName().equals("ADMIN") || 
-                user.getId().equals(oexpense.get().getUser().getId())){
+            if(user.getRole().getRoleName().equals("ADMIN") || user.getId().equals(oexpense.get().getUser().getId())){
                 expenseRepository.deleteById(id);
+                return new ResponseEntity<>("Successfully Deleted", HttpStatus.OK);
              }
         }
-        else{
-            new ResponseEntity<>("Error Deleting", HttpStatus.CONFLICT);
-        }
-		return new ResponseEntity<>("Successfully Deleted", HttpStatus.OK);
+        return new ResponseEntity<>("Error Deleting", HttpStatus.CONFLICT);
 	}
 
     public Iterable<HashMap<String, String>> mapUserData(List<Object[]> queryResult){
@@ -244,27 +241,4 @@ public class ExpenseController {
         List<Object[]> queryResult = expenseRepository.getNetPerCategory();
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
-
-    @PostMapping(path = "/addExpense/{cid}")
-    public ResponseEntity<Expense> addUserExpense(@RequestBody Expense expense, @PathVariable("cid") Integer cid) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String email = userDetails.getUsername();
-        User user = userRepository.findByEmail(email);
-        if (categoryRepository.existsById(cid)) {
-            Category category = categoryRepository.findById(cid).get();
-
-            category.getExpenseList().add(expense);
-            user.getExpenseList().add(expense);
-            expense.setCategory(category);
-            expense.setUser(user);
-            categoryRepository.save(category);
-            userRepository.save(user);
-            Expense newExpense = expenseRepository.save(expense);
-            return new ResponseEntity<>(newExpense, HttpStatus.CREATED);
-        }
-        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-
-
-    }
-
 }
