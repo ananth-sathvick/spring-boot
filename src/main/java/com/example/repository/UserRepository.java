@@ -1,5 +1,6 @@
 package com.example.repository;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import com.example.model.User;
 
@@ -8,4 +9,7 @@ import com.example.model.User;
 
 public interface UserRepository extends CrudRepository<User, Integer> {
     User findByEmail(String username);
+
+    @Query(value = "SELECT * FROM user u WHERE u.role_id = ?1", nativeQuery = true)
+	Iterable<User> getAll(Integer role_id);
 }

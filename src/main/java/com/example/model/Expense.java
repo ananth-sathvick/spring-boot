@@ -18,6 +18,10 @@ public class Expense {
 
     private Date date;
 
+    private String shopName;
+
+    
+
     @ManyToOne
     private User user;
 
@@ -62,6 +66,14 @@ public class Expense {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public String getShopName() {
+        return this.shopName;
+    }
+
+    public void setShopName(String shopName) {
+        this.shopName = shopName;
     }
 
 }
