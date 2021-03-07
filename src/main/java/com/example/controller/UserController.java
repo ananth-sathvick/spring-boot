@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Map;
 
 import com.example.config.TokenProvider;
@@ -14,6 +15,7 @@ import com.example.service.PasswordService;
 import com.example.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -64,11 +67,17 @@ public class UserController {
 
   @PreAuthorize("hasRole('ADMIN')")
   @RequestMapping(value="/register/{roleName}", method = RequestMethod.POST)
-  public ResponseEntity<User> saveUser(@RequestBody User user, @PathVariable("roleName") String roleName){
-      user.setPassword(bcryptEncoder.encode(user.getPassword()));
-      Role role = roleRepository.findRoleByRoleName(roleName);        
-      user.setRole(role);
-      return new ResponseEntity<> (userRepository.save(user), HttpStatus.CREATED);
+  public ResponseEntity<User> saveUser(@RequestBody User user, @PathVariable("roleName") String roleName)throws SQLIntegrityConstraintViolationException{
+	  try {    
+	  	  user.setPassword(bcryptEncoder.encode(user.getPassword()));
+	      Role role = roleRepository.findRoleByRoleName(roleName);        
+	      user.setRole(role);
+	      return new ResponseEntity<> (userRepository.save(user), HttpStatus.CREATED);
+	  }
+	  catch(DataIntegrityViolationException e) {
+		  throw new SQLIntegrityConstraintViolationException("Already Registered!");
+	  }
+      
   }
 
 
@@ -93,21 +102,27 @@ public class UserController {
 
   @PreAuthorize("hasRole('USER')")
   @RequestMapping(value="/changepassword", method = RequestMethod.POST)
-  public ResponseEntity<String> changePassword(@RequestBody ChangePassword changePassword){
+  public ResponseEntity<String> changePassword(@RequestBody ChangePassword changePassword)throws SQLIntegrityConstraintViolationException{
       if(passwordService.changePassword(changePassword)){
         return new ResponseEntity<>("Password Changed Successfully", HttpStatus.OK);
       }
-      return new ResponseEntity<>("Current password is incorrect", HttpStatus.BAD_REQUEST);
+      else
+      {
+    	  throw new SQLIntegrityConstraintViolationException("Current Password Incorrect!");
+      }
   }
 
   @RequestMapping(value="/forgotpassword", method = RequestMethod.POST)
-  public ResponseEntity<String> forgotPassword(@RequestBody Map<String,Object> jsonEmail){
+  public ResponseEntity<String> forgotPassword(@RequestBody Map<String,Object> jsonEmail)throws SQLIntegrityConstraintViolationException{
       String email = (String) jsonEmail.get("email");
       if(passwordService.forgotPassword(email))
       {
         return new ResponseEntity<>("New Password sent to your Email-Id successfully", HttpStatus.OK);
       }
-      return new ResponseEntity<>("No such user found!", HttpStatus.BAD_REQUEST);
+      else {
+    	  throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such user found!");
+      }
+      
   }
 
 }

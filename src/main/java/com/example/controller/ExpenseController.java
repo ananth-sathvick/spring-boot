@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import java.sql.Date;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,19 +47,34 @@ public class ExpenseController {
     }
 
     @GetMapping(path = "/findBw/{d1}/{d2}") // returns a list of expenses logged between Date(d1) and Date(d2) (d1 < d2)
-    public ResponseEntity<Iterable<Expense>> getAllExpenseBw(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2 ) {
-        return new ResponseEntity<>(expenseRepository.getAllExpenseBw(d1, d2), HttpStatus.OK);
+    public ResponseEntity<Iterable<Expense>> getAllExpenseBw(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2 )throws SQLIntegrityConstraintViolationException {
+    	if(d1.compareTo(d2) < 0) {
+    		return new ResponseEntity<>(expenseRepository.getAllExpenseBw(d1, d2), HttpStatus.OK);
+    	}
+    	else    	{
+    		throw new SQLIntegrityConstraintViolationException("Dates entered are wrong!");
+    	}
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/findByCategory/{cid}") // returns a list of expenses logged under category with (category_id = cid)
     public ResponseEntity<Iterable<Expense>> getByCategory(@PathVariable("cid") Integer cid) {
-        return new ResponseEntity<>(expenseRepository.getByCategory(cid), HttpStatus.OK);
+    	if(categoryRepository.existsById(cid)) {
+    		return new ResponseEntity<>(expenseRepository.getByCategory(cid), HttpStatus.OK);
+    	}
+    	else    	{
+    		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such category found!");
+    	}
     }
 
     @GetMapping(path = "/findByUser/{uid}") // returns a list of expenses logged under user with (user_id = uid)
     public ResponseEntity<Iterable<Expense>> getByUser(@PathVariable("uid") Integer uid) {
+    	if(userRepository.existsById(uid)) {
         return new ResponseEntity<>(expenseRepository.getByUser(uid), HttpStatus.OK);
+    	}
+    	else {
+    		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such user found!");
+    	}
     }
 
     // returns a list of expenses logged under user with (user_id = cid) and category with (category_id = cid)
