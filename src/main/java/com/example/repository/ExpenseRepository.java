@@ -34,13 +34,13 @@ public interface ExpenseRepository extends JpaRepository<Expense, Integer>{
     List<Object[]> getNetPerUser(Date d1, Date d2);
 
     @Query(value = "SELECT c.*, t.amount FROM category c INNER JOIN " +
-    "(SELECT category_id, SUM(amount) AS amount FROM expense GROUP BY category_id) "+
+    "(SELECT category_id, SUM(amount) AS amount FROM expense WHERE user_id LIKE ?1 GROUP BY category_id) "+
     "AS t WHERE c.id = t.category_id", nativeQuery = true)
-    List<Object[]> getNetPerCategory();
+    List<Object[]> getNetPerCategory(String uid);
 
     @Query(value = "SELECT c.*, t.amount FROM category c INNER JOIN " +
     "(SELECT category_id, SUM(amount) AS amount FROM expense WHERE "+
-    "date >= ?1 AND date <= ?2 GROUP BY category_id) AS t " +
+    "user_id LIKE ?1 AND date >= ?2 AND date <= ?3 GROUP BY category_id) AS t " +
     " WHERE c.id = t.category_id", nativeQuery = true)
-    List<Object[]> getNetPerCategory(Date d1, Date d2);
+    List<Object[]> getNetPerCategory(String uid, Date d1, Date d2);
 }

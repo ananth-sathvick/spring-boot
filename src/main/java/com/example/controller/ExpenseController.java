@@ -231,14 +231,30 @@ public class ExpenseController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/netPerCategory/{d1}/{d2}") // returns a list all user details along with their total expenses
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
-        List<Object[]> queryResult = expenseRepository.getNetPerCategory(d1, d2);
+        List<Object[]> queryResult = expenseRepository.getNetPerCategory("%", d1, d2);
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/netPerCategory") // returns a list all user details along with their total expenses
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory() {
-        List<Object[]> queryResult = expenseRepository.getNetPerCategory();
+        List<Object[]> queryResult = expenseRepository.getNetPerCategory("%");
+        return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/myNetPerCategory") // returns a list all user details along with their total expenses
+    public ResponseEntity<Iterable<HashMap<String, String>>> getMyNetPerCategory() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findByEmail(userDetails.getUsername());
+        List<Object[]> queryResult = expenseRepository.getNetPerCategory(String.valueOf(user.getId()));
+        return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/myNetPerCategory/{d1}/{d2}") // returns a list all user details along with their total expenses
+    public ResponseEntity<Iterable<HashMap<String, String>>> getMyNetPerCategory(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findByEmail(userDetails.getUsername());
+        List<Object[]> queryResult = expenseRepository.getNetPerCategory(String.valueOf(user.getId()), d1, d2);
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 }
