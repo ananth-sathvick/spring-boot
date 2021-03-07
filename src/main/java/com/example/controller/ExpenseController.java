@@ -64,12 +64,12 @@ public class ExpenseController {
     @GetMapping(path = "/find/{id}") // returns the expense with expense_id = id
     public ResponseEntity<Expense> findExpenseById(@PathVariable("id") Integer id) {
         Optional<Expense> expense = expenseRepository.findById(id);
-        if(expense.isPresent()){
+        if (expense.isPresent()) {
             System.out.println(expense.get().getClass());
-            return new ResponseEntity<>(expense.get(), HttpStatus.OK);}
-        else
+            return new ResponseEntity<>(expense.get(), HttpStatus.OK);
+        } else
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-	}
+    }
 
     @PreAuthorize("hasRole('ADMIN')") // returns a list of expenses logged under user with (user_id = cid) and category with (category_id = cid)
     @GetMapping(path = "/findBy/{uid}/{cid}") 
@@ -128,8 +128,7 @@ public class ExpenseController {
             userRepository.save(user);
             Expense newExpense = expenseRepository.save(expense);
             return new ResponseEntity<>(newExpense, HttpStatus.CREATED);
-        }
-        else
+        } else
             return new ResponseEntity<>(null, HttpStatus.CONFLICT);
 	}
 
@@ -164,8 +163,7 @@ public class ExpenseController {
         if(expense.getId() != null){
             Expense updateExpense = expenseRepository.save(expense);
             return new ResponseEntity<>(updateExpense, HttpStatus.OK);
-        }
-        else
+        } else
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 	}
 	
@@ -189,12 +187,12 @@ public class ExpenseController {
     public Iterable<HashMap<String, String>> mapUserData(List<Object[]> queryResult){
         HashMap<String, String> map = new HashMap<String, String>();
         ArrayList<HashMap<String, String>> result = new ArrayList<HashMap<String, String>>();
-        if(queryResult != null && !queryResult.isEmpty()){
+        if (queryResult != null && !queryResult.isEmpty()) {
             for (Object[] object : queryResult) {
                 map.put("id", String.valueOf(object[0]));
-                map.put("fname", (String)object[1]);
-                map.put("lname", (String)object[2]);
-                map.put("email", (String)object[3]);
+                map.put("fname", (String) object[1]);
+                map.put("lname", (String) object[2]);
+                map.put("email", (String) object[3]);
                 map.put("roleId", String.valueOf(object[5]));
                 map.put("netAmount", String.valueOf(object[6]));
                 result.add(map);
@@ -246,4 +244,27 @@ public class ExpenseController {
         List<Object[]> queryResult = expenseRepository.getNetPerCategory();
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
+
+    @PostMapping(path = "/addExpense/{cid}")
+    public ResponseEntity<Expense> addUserExpense(@RequestBody Expense expense, @PathVariable("cid") Integer cid) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String email = userDetails.getUsername();
+        User user = userRepository.findByEmail(email);
+        if (categoryRepository.existsById(cid)) {
+            Category category = categoryRepository.findById(cid).get();
+
+            category.getExpenseList().add(expense);
+            user.getExpenseList().add(expense);
+            expense.setCategory(category);
+            expense.setUser(user);
+            categoryRepository.save(category);
+            userRepository.save(user);
+            Expense newExpense = expenseRepository.save(expense);
+            return new ResponseEntity<>(newExpense, HttpStatus.CREATED);
+        }
+        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+
+
+    }
+
 }
