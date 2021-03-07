@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller // This means that this class is a Controller
 @RequestMapping(path = "/expense") // This means URL's start with /demo (after Application path)
@@ -58,10 +59,11 @@ public class ExpenseController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/findByUser/{uid}") // returns a list of expenses logged under user with (user_id = uid)
     public ResponseEntity<Iterable<Expense>> findByUser(@PathVariable("uid") Integer uid) {
-        return new ResponseEntity<>(expenseRepository.getByUser(uid), HttpStatus.OK);
+    	try {
+    		return new ResponseEntity<>(expenseRepository.getByUser(uid), HttpStatus.OK);
     	}
-    	else {
-    		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such user found!");
+    	catch(IllegalArgumentException e) {
+    		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such user found!",e);
     	}
     }
 
@@ -73,49 +75,72 @@ public class ExpenseController {
             System.out.println(expense.get().getClass());
             return new ResponseEntity<>(expense.get(), HttpStatus.OK);
         } else
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        	throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such expense found!");
     }
 
     @PreAuthorize("hasRole('ADMIN')") // returns a list of expenses logged under user with (user_id = cid) and category with (category_id = cid)
     @GetMapping(path = "/findBy/{uid}/{cid}") 
     public ResponseEntity<Iterable<Expense>> findByUser(@PathVariable("uid") String uid, @PathVariable("uid") String cid) {
+    	try {
         if(uid.equals("*"))
             uid = "%";
 
         if(cid.equals("*"))
             cid = "%";
         return new ResponseEntity<>(expenseRepository.getByUserCategory(uid, cid), HttpStatus.OK);
+    	}
+    	catch(IllegalArgumentException e) {
+    		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Wrong user id or category id!",e);
+    	}
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/findBy/{uid}/{cid}/{d1}/{d2}") // returns a list of expenses logged between Date(d1) and Date(d2) (d1 < d2)
     public ResponseEntity<Iterable<Expense>> getAllExpenseBw(@PathVariable("uid") String uid, @PathVariable("cid") String cid,
         @PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
-        if(uid.equals("*"))
-            uid = "%";
-
-        if(cid.equals("*"))
-            cid = "%";
-        return new ResponseEntity<>(expenseRepository.getAllExpenseBw(d1, d2, uid, cid), HttpStatus.OK);
+    	if(d1.compareTo(d2) > 0)
+    		throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong date input");
+    	else if(d1.compareTo(d2) < 0) {
+    		if(uid.equals("*"))
+	            uid = "%";
+	
+	        if(cid.equals("*"))
+	            cid = "%";
+	        return new ResponseEntity<>(expenseRepository.getAllExpenseBw(d1, d2, uid, cid), HttpStatus.OK);
+    	}
+    	else {
+    		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Wrong user id or category id!");
+    	}
     }
 
     @GetMapping(path = "/findBy/{cid}") // returns a list of expenses logged under category with (category_id = cid)
     public ResponseEntity<Iterable<Expense>> findByCategory(@PathVariable("cid") Integer cid) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userRepository.findByEmail(userDetails.getUsername());
-        return new ResponseEntity<>(expenseRepository.getByUserCategory(
-            String.valueOf(user.getId()), String.valueOf(cid)), HttpStatus.OK
-        );
+    	try {
+	        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	        User user = userRepository.findByEmail(userDetails.getUsername());
+	        return new ResponseEntity<>(expenseRepository.getByUserCategory(String.valueOf(user.getId()), String.valueOf(cid)), HttpStatus.OK);
+    	}
+    	catch(IllegalArgumentException e) {
+    		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such category found",e);
+    	}
     }
 
     @GetMapping(path = "/findBy/{cid}/{d1}/{d2}") // returns a list of expenses logged between Date(d1) and Date(d2) (d1 < d2)
     public ResponseEntity<Iterable<Expense>> getAllExpenseBw(@PathVariable("cid") String cid, @PathVariable("d1") Date d1, 
         @PathVariable("d2") Date d2) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userRepository.findByEmail(userDetails.getUsername());
-        if(cid.equals("*"))
-            cid = "%";
-        return new ResponseEntity<>(expenseRepository.getAllExpenseBw(d1, d2, String.valueOf(user.getId()), cid), HttpStatus.OK);
+    	if(d1.compareTo(d2) > 0)
+    		throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong date input");
+    	else if(d1.compareTo(d2) < 0) {
+	        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	        User user = userRepository.findByEmail(userDetails.getUsername());
+	        if(cid.equals("*"))
+	            cid = "%";
+	        return new ResponseEntity<>(expenseRepository.getAllExpenseBw(d1, d2, String.valueOf(user.getId()), cid), HttpStatus.OK);
+    	}
+    	else
+    	{
+    		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such category found");
+    	}
     }
 
 	// creates a new expense under user with (user_id = cid) and category with (category_id = cid) and returns the new expense
@@ -134,7 +159,7 @@ public class ExpenseController {
             Expense newExpense = expenseRepository.save(expense);
             return new ResponseEntity<>(newExpense, HttpStatus.CREATED);
         } else
-            return new ResponseEntity<>(null, HttpStatus.CONFLICT);
+        	throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Wrong user id or category id!");
 	}
 
     @PostMapping(path = "/add/{cid}")
@@ -153,7 +178,7 @@ public class ExpenseController {
             return new ResponseEntity<>(newExpense, HttpStatus.CREATED);
         }
         else
-            return new ResponseEntity<>(null, HttpStatus.CONFLICT);
+        	throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such category found!");
 	}
 
 
@@ -163,13 +188,13 @@ public class ExpenseController {
         User user = userRepository.findByEmail(userDetails.getUsername());
         if(!user.getRole().getRoleName().equals("ADMIN")){
             if(expense.getId() == null || !user.getId().equals(expense.getUser().getId()))
-                return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
+            	throw new ResponseStatusException(HttpStatus.NOT_MODIFIED, "Only admin is allowed to update the expenses!");
         }
         if(expense.getId() != null){
             Expense updateExpense = expenseRepository.save(expense);
             return new ResponseEntity<>(updateExpense, HttpStatus.OK);
         } else
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        	throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such expense found!");
 	}
 	
 	@DeleteMapping(path = "/delete/{id}") // deletes the expense with expense_id = id 
@@ -184,7 +209,7 @@ public class ExpenseController {
              }
         }
         else{
-            new ResponseEntity<>("Error Deleting", HttpStatus.CONFLICT);
+        	throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such expense present!");
         }
 		return new ResponseEntity<>("Successfully Deleted", HttpStatus.OK);
 	}
@@ -210,8 +235,12 @@ public class ExpenseController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/netPerUser/{d1}/{d2}") // returns a list all user details along with their total expenses
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerUser(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
-        List<Object[]> queryResult = expenseRepository.getNetPerUser(d1, d2);
-        return new ResponseEntity<>(mapUserData(queryResult), HttpStatus.OK);
+    	if(d1.compareTo(d2) < 0) {
+	        List<Object[]> queryResult = expenseRepository.getNetPerUser(d1, d2);
+	        return new ResponseEntity<>(mapUserData(queryResult), HttpStatus.OK);
+    	}
+    	else
+    		throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong date input");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -239,8 +268,12 @@ public class ExpenseController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/netPerCategory/{d1}/{d2}") // returns a list all user details along with their total expenses
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
-        List<Object[]> queryResult = expenseRepository.getNetPerCategory(d1, d2);
-        return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
+    	if(d1.compareTo(d2) < 0) {
+	    	List<Object[]> queryResult = expenseRepository.getNetPerCategory(d1, d2);
+	        return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
+    	}
+    	else
+    		throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong date input");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -267,7 +300,7 @@ public class ExpenseController {
             Expense newExpense = expenseRepository.save(expense);
             return new ResponseEntity<>(newExpense, HttpStatus.CREATED);
         }
-        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such category found!");
 
 
     }
