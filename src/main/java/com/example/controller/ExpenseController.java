@@ -60,10 +60,6 @@ public class ExpenseController {
     public ResponseEntity<Iterable<Expense>> findByUser(@PathVariable("uid") Integer uid) {
         return new ResponseEntity<>(expenseRepository.getByUser(uid), HttpStatus.OK);
     	}
-    	else {
-    		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such user found!");
-    	}
-    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/find/{id}") // returns the expense with expense_id = id
