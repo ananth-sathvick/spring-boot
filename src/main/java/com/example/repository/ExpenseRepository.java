@@ -11,7 +11,6 @@ import com.example.model.Expense;
 // This will be AUTO IMPLEMENTED by Spring into a Bean called userRepository
 // CRUD refers Create, Read, Update, Delete
 public interface ExpenseRepository extends JpaRepository<Expense, Integer>{
-    @Query(value = "SELECT * FROM expense WHERE date >= ?1 AND date <= ?2 AND user_id LIKE ?3 AND category_id LIKE ?4", nativeQuery = true)
     List<Expense> getAllExpenseBw(Date d1, Date d2, String uid, String cid);
 
     @Query(value = "SELECT * FROM expense e WHERE e.category_id = ?1", nativeQuery = true)

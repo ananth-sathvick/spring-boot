@@ -181,7 +181,6 @@ public class ExpenseController {
         return new ResponseEntity<>("Error Deleting", HttpStatus.CONFLICT);
 	}
 
-    public Iterable<HashMap<String, String>> mapUserData(List<Object[]> queryResult){
         HashMap<String, String> map = new HashMap<String, String>();
         ArrayList<HashMap<String, String>> result = new ArrayList<HashMap<String, String>>();
         if (queryResult != null && !queryResult.isEmpty()) {
@@ -213,7 +212,6 @@ public class ExpenseController {
         return new ResponseEntity<>(mapUserData(queryResult), HttpStatus.OK);
     }
 
-    public Iterable<HashMap<String, String>> mapCategoryData(List<Object[]> queryResult){
         HashMap<String, String> map = new HashMap<String, String>();
         ArrayList<HashMap<String, String>> result = new ArrayList<HashMap<String, String>>();
         if(queryResult != null && !queryResult.isEmpty()){
