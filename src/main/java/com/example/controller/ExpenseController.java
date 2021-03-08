@@ -12,6 +12,7 @@ import com.example.model.Expense;
 import com.example.model.User;
 import com.example.repository.ExpenseRepository;
 import com.example.repository.UserRepository;
+import com.example.service.ExpenseService;
 import com.example.repository.CategoryRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,9 @@ public class ExpenseController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired 
+    ExpenseService expenseService;
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/all") // returns a list of all the expenses without any filter
@@ -128,6 +132,7 @@ public class ExpenseController {
             categoryRepository.save(category);
             userRepository.save(user);
             Expense newExpense = expenseRepository.save(expense);
+            expenseService.checkTarget(user,newExpense);
             return new ResponseEntity<>(newExpense, HttpStatus.CREATED);
         } else
             return new ResponseEntity<>(null, HttpStatus.CONFLICT);

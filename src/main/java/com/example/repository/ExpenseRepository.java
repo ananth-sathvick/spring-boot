@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.sql.Date;
 import java.util.List;
+import java.util.Map;
 
 import com.example.model.Expense;
 
@@ -43,4 +44,10 @@ public interface ExpenseRepository extends JpaRepository<Expense, Integer>{
     "date >= ?1 AND date <= ?2 GROUP BY category_id) AS t " +
     " WHERE c.id = t.category_id", nativeQuery = true)
     List<Object[]> getNetPerCategory(Date d1, Date d2);
+
+    @Query(value = "SELECT SUM(e.amount) FROM expense e WHERE user_id = ?1 AND MONTH(e.date) = MONTH(?2) AND YEAR(e.date) = YEAR(?2) ", nativeQuery = true)
+    Integer getCurrentMonthExpense(String uid,Date date);
+
+    @Query(value = "SELECT AVG(e.amount) as avg,COUNT(*) as count FROM expense e WHERE user_id = ?1 AND e.date < ?2 AND NOT MONTH(e.date) = MONTH(?2) ", nativeQuery = true)
+    Map<String,Object> getPreviousMonthAverageExpense(String uid,Date date);
 }
