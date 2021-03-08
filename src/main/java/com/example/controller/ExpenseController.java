@@ -100,11 +100,11 @@ public class ExpenseController {
     }
 
     @GetMapping(path = "/findBy/{cid}") // returns a list of expenses logged under category with (category_id = cid)
-    public ResponseEntity<Iterable<Expense>> findByCategory(@PathVariable("cid") Integer cid) {
+    public ResponseEntity<Iterable<Expense>> findByCategory(@PathVariable("cid") String cid) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername());
         return new ResponseEntity<>(expenseRepository.getByUserCategory(
-            String.valueOf(user.getId()), String.valueOf(cid)), HttpStatus.OK
+            String.valueOf(user.getId()), cid), HttpStatus.OK
         );
     }
 
@@ -158,19 +158,21 @@ public class ExpenseController {
 	}
 
 
-	@PutMapping(path = "/update") // updates an existing expense with new the values and returns the updated expense entity
-	public ResponseEntity<Expense> updateExpense(@RequestBody Expense expense){
+	@PutMapping(path = "/update/{cid}") // updates an existing expense with new the values and returns the updated expense entity
+	public ResponseEntity<Expense> updateExpense(@RequestBody Expense expense, @PathVariable("cid") Integer cid){
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername());
-        if(!user.getRole().getRoleName().equals("ADMIN")){
-            if(expense.getId() == null || !user.getId().equals(expense.getUser().getId()))
-                return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
+        Optional<Expense> oExpense = expenseRepository.findById(expense.getId());
+        Optional<Category> newCategory = categoryRepository.findById(cid);
+        if(oExpense.isPresent() && newCategory.isPresent()){
+            Category category = newCategory.get();
+            if(user.getRole().getRoleName().equals("ADMIN") || user.getId().equals(oExpense.get().getUser().getId())){
+                expense.setCategory(category);
+                expense.setUser(user);
+                return new ResponseEntity<>(expenseRepository.save(expense), HttpStatus.OK);
+             }
         }
-        if(expense.getId() != null){
-            Expense updateExpense = expenseRepository.save(expense);
-            return new ResponseEntity<>(updateExpense, HttpStatus.OK);
-        } else
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(null, HttpStatus.OK);
 	}
 	
 	@DeleteMapping(path = "/delete/{id}") // deletes the expense with expense_id = id 
@@ -179,18 +181,15 @@ public class ExpenseController {
         User user = userRepository.findByEmail(userDetails.getUsername());
         Optional<Expense> oexpense = expenseRepository.findById(id);
         if(oexpense.isPresent()){
-            if(user.getRole().getRoleName().equals("ADMIN") || 
-                user.getId().equals(oexpense.get().getUser().getId())){
+            if(user.getRole().getRoleName().equals("ADMIN") || user.getId().equals(oexpense.get().getUser().getId())){
                 expenseRepository.deleteById(id);
+                return new ResponseEntity<>("Successfully Deleted", HttpStatus.OK);
              }
         }
-        else{
-            new ResponseEntity<>("Error Deleting", HttpStatus.CONFLICT);
-        }
-		return new ResponseEntity<>("Successfully Deleted", HttpStatus.OK);
+        return new ResponseEntity<>("Error Deleting", HttpStatus.CONFLICT);
 	}
 
-    public Iterable<HashMap<String, String>> mapUserData(List<Object[]> queryResult){
+    private Iterable<HashMap<String, String>> mapUserData(List<Object[]> queryResult){
         HashMap<String, String> map = new HashMap<String, String>();
         ArrayList<HashMap<String, String>> result = new ArrayList<HashMap<String, String>>();
         if (queryResult != null && !queryResult.isEmpty()) {
@@ -222,7 +221,7 @@ public class ExpenseController {
         return new ResponseEntity<>(mapUserData(queryResult), HttpStatus.OK);
     }
 
-    public Iterable<HashMap<String, String>> mapCategoryData(List<Object[]> queryResult){
+    private Iterable<HashMap<String, String>> mapCategoryData(List<Object[]> queryResult){
         HashMap<String, String> map = new HashMap<String, String>();
         ArrayList<HashMap<String, String>> result = new ArrayList<HashMap<String, String>>();
         if(queryResult != null && !queryResult.isEmpty()){
@@ -240,37 +239,30 @@ public class ExpenseController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/netPerCategory/{d1}/{d2}") // returns a list all user details along with their total expenses
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
-        List<Object[]> queryResult = expenseRepository.getNetPerCategory(d1, d2);
+        List<Object[]> queryResult = expenseRepository.getNetPerCategory("%", d1, d2);
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/netPerCategory") // returns a list all user details along with their total expenses
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory() {
-        List<Object[]> queryResult = expenseRepository.getNetPerCategory();
+        List<Object[]> queryResult = expenseRepository.getNetPerCategory("%");
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 
-    @PostMapping(path = "/addExpense/{cid}")
-    public ResponseEntity<Expense> addUserExpense(@RequestBody Expense expense, @PathVariable("cid") Integer cid) {
+    @GetMapping(path = "/myNetPerCategory") // returns a list all user details along with their total expenses
+    public ResponseEntity<Iterable<HashMap<String, String>>> getMyNetPerCategory() {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String email = userDetails.getUsername();
-        User user = userRepository.findByEmail(email);
-        if (categoryRepository.existsById(cid)) {
-            Category category = categoryRepository.findById(cid).get();
-
-            category.getExpenseList().add(expense);
-            user.getExpenseList().add(expense);
-            expense.setCategory(category);
-            expense.setUser(user);
-            categoryRepository.save(category);
-            userRepository.save(user);
-            Expense newExpense = expenseRepository.save(expense);
-            return new ResponseEntity<>(newExpense, HttpStatus.CREATED);
-        }
-        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-
-
+        User user = userRepository.findByEmail(userDetails.getUsername());
+        List<Object[]> queryResult = expenseRepository.getNetPerCategory(String.valueOf(user.getId()));
+        return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 
+    @GetMapping(path = "/myNetPerCategory/{d1}/{d2}") // returns a list all user details along with their total expenses
+    public ResponseEntity<Iterable<HashMap<String, String>>> getMyNetPerCategory(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findByEmail(userDetails.getUsername());
+        List<Object[]> queryResult = expenseRepository.getNetPerCategory(String.valueOf(user.getId()), d1, d2);
+        return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
+    }
 }

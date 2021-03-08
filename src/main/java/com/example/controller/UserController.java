@@ -79,13 +79,15 @@ public class UserController {
     user.setRole(role);
 
     try {
-      userRepository.save(user);
       emailService.sendEmail("admin@expense.tracker.com", user.getEmail(), "Welcome to Expense Tracker",
           "<h1>Welcome to Expense Tracker</h1><h3>Hello, " + user.getFname() + " " + user.getLname()
               + "</h3><p>Please use the below login credentials to login</p>" + "<p>" + "username :" + user.getEmail()
-              + "</p><p>" + "password :" + password + "</p>" + "<p>You are registered as " + roleName + "</p>");
-    } catch (DataIntegrityViolationException e) {
-      throw new SQLIntegrityConstraintViolationException("Already Registered!");
+              + "</p><p>" + "password :" + password + "</p>" + "<p>You are registered as " + roleName + "</p>", null);
+      userRepository.save(user);
+    } 
+    catch (Exception e) {
+      System.out.println(e);
+      return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 
     return new ResponseEntity<>(userRepository.save(user), HttpStatus.CREATED);

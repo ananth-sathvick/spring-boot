@@ -56,7 +56,7 @@ public class PasswordService {
         "<p>"+
         "username :"+ user.getEmail() + "</p><p>" +
         "password :"+ newPassword +
-        "</p>");
+        "</p>", null);
         return true;
         
     }
