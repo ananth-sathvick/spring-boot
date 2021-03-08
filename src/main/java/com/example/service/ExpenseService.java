@@ -45,7 +45,7 @@ public class ExpenseService {
             "<h4>You have reached your expenditure target for the month "+ expense.getDate().toLocalDate().getMonth().getDisplayName(TextStyle.FULL_STANDALONE,Locale.ENGLISH)+" "+ expense.getDate().toLocalDate().getYear()+"</h4>" +
             "<p>Total expense for the month "+ expense.getDate().toLocalDate().getMonth().getDisplayName(TextStyle.FULL_STANDALONE,Locale.ENGLISH)+" "+ expense.getDate().toLocalDate().getYear()+" - <b>"+ currentMonthExpense +"</b></p>" +
             "<p>Set target based on previous expenditures - <b>"+ (1.25 *  previousMonthAverage.doubleValue())  +"</b></p>" +
-            "<p style='color:gray'>*Target is calculated as 125% of average of previous months expenditure</p>");
+            "<p style='color:gray'>*Target is calculated as 125% of average of previous months expenditure</p>",null);
         }
 
         
