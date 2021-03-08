@@ -85,10 +85,9 @@ public class UserController {
               + "</p><p>" + "password :" + password + "</p>" + "<p>You are registered as " + roleName + "</p>", null);
       userRepository.save(user);
     } 
-    catch (Exception e) {
-      System.out.println(e);
-      return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-    }
+    catch (DataIntegrityViolationException e) {
+        throw new SQLIntegrityConstraintViolationException("Already Registered!");
+      }
 
     return new ResponseEntity<>(userRepository.save(user), HttpStatus.CREATED);
 
