@@ -1,7 +1,6 @@
 package com.example.controller;
 
 import java.sql.Date;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,10 +9,10 @@ import java.util.Optional;
 import com.example.model.Category;
 import com.example.model.Expense;
 import com.example.model.User;
+import com.example.repository.CategoryRepository;
 import com.example.repository.ExpenseRepository;
 import com.example.repository.UserRepository;
 import com.example.service.ExpenseService;
-import com.example.repository.CategoryRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -132,7 +131,7 @@ public class ExpenseController {
             categoryRepository.save(category);
             userRepository.save(user);
             Expense newExpense = expenseRepository.save(expense);
-            expenseService.checkTarget(user,newExpense);
+            expenseService.checkTarget(user,expense); // Performs linear regression
             return new ResponseEntity<>(newExpense, HttpStatus.CREATED);
         } else
             return new ResponseEntity<>(null, HttpStatus.CONFLICT);

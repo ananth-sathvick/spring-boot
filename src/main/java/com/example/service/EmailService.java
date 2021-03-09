@@ -1,8 +1,5 @@
 package com.example.service;
 
-import java.io.File;
-import java.io.IOException;
-
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
