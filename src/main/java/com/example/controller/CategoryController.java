@@ -25,12 +25,12 @@ public class CategoryController {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    @GetMapping(path = "/all")
+    @GetMapping(path = "/all") // returns list of all categories
     public ResponseEntity<Iterable<Category>> getAllCategorys() {
         return new ResponseEntity<>(categoryRepository.findAll(), HttpStatus.OK);
     }
 
-    @GetMapping("/find/{id}")
+    @GetMapping("/find/{id}") //returns category with id = {id}
     public ResponseEntity<Category> getCategoryById(@PathVariable("id") Integer id) {
         Optional<Category> category = categoryRepository.findById(id);
         if(category.isPresent())
@@ -39,15 +39,15 @@ public class CategoryController {
         	throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such category found!");
 	}
 	
-    @PreAuthorize("hasRole('ADMIN')")
-	@PostMapping("/add")
+    @PreAuthorize("hasRole('ADMIN')") // Admin only
+	@PostMapping("/add") // adds new category to category tables and returns it
 	public ResponseEntity<Category> addCategory(@RequestBody Category category){
 		Category newCategory = categoryRepository.save(category);
 		return new ResponseEntity<>(newCategory, HttpStatus.CREATED);
 	}
 	
-    @PreAuthorize("hasRole('ADMIN')")
-	@PutMapping("/update")
+    @PreAuthorize("hasRole('ADMIN')") // Admin only
+	@PutMapping("/update") // updates an existing category and returns it with updated values
 	public ResponseEntity<Category> updateCategory(@RequestBody Category category){
     	try {
 			Category updateCategory = categoryRepository.save(category);
@@ -58,8 +58,8 @@ public class CategoryController {
     	}
 	}
 	
-    @PreAuthorize("hasRole('ADMIN')")
-	@DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')") // Admin only
+	@DeleteMapping("/delete/{id}") // deletes the category with id = {id}
 	public ResponseEntity<?> deleteCategory(@PathVariable("id") Integer id){
         if (categoryRepository.existsById(id)) {
             categoryRepository.deleteById(id);

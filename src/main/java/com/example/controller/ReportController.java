@@ -19,7 +19,7 @@ public class ReportController {
     @Autowired
     ReportService reportService;
     
-    @PostMapping("/send") 
+    @PostMapping("/send") // send 
     public ResponseEntity<String> uploadReport(@RequestParam("file") MultipartFile file) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(file.isEmpty()) {

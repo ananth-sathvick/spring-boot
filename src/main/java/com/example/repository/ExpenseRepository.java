@@ -48,11 +48,10 @@ public interface ExpenseRepository extends JpaRepository<Expense, Integer> {
         List<Object[]> getNetPerCategory(String uid, Date d1, Date d2);
 
 
-        @Query(value = "SELECT SUM(e.amount) as sum FROM expense e WHERE e.user_id = ?1 AND NOT (MONTH(e.date) = MONTH(?2) AND YEAR(e.date) = YEAR(?2)) GROUP BY MONTH(e.date),YEAR(e.date) ORDER BY YEAR(e.date),MONTH(e.date)", nativeQuery = true)
-        ArrayList<BigInteger> getExpenseAvgByMonth(String uid,Date d1);
+        @Query(value = "SELECT SUM(e.amount) as sum FROM expense e WHERE e.user_id = ?1 GROUP BY MONTH(e.date),YEAR(e.date) ORDER BY YEAR(e.date),MONTH(e.date)", nativeQuery = true)
+        ArrayList<BigInteger> getExpenseAvgByMonth(String uid);
 
         @Query(value = "SELECT SUM(e.amount) as sum FROM `expense` e  WHERE e.user_id = ?1 AND MONTH(e.date) = MONTH(?2) AND YEAR(e.date) = YEAR(?2)", nativeQuery = true)
-        Integer getCurrentMonthExpenses(String uid,Date d1);
-        
+        Integer getCurrentMonthExpenses(String uid, Date d1);
 
 }

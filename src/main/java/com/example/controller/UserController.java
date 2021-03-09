@@ -71,7 +71,7 @@ public class UserController {
     return new ResponseEntity<>(new AuthToken(token), HttpStatus.OK);
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('ADMIN')") // Admin only
   @RequestMapping(value = "/register/{roleName}", method = RequestMethod.POST)
   public ResponseEntity<User> saveUser(@RequestBody User user, @PathVariable("roleName") String roleName)
       throws SQLIntegrityConstraintViolationException {
@@ -98,7 +98,7 @@ public class UserController {
 
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('ADMIN')") // Admin only
   @RequestMapping(value = "/adminping", method = RequestMethod.GET)
   public String adminPing() {
     return "Only Admins Can Read This";
@@ -133,13 +133,13 @@ public class UserController {
     }
   }
 
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ADMIN')") // Admin only
 @RequestMapping(value="/getallusers",method=RequestMethod.GET)
   public Iterable<User> getAllUsers() {
     return userRepository.getAll(1);
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('ADMIN')") // Admin only
   @RequestMapping(value = "/getalladmins", method = RequestMethod.GET)
   public Iterable<User> getAllAdmins() {
     return userRepository.getAll(2);
