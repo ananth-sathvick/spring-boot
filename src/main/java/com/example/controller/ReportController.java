@@ -128,10 +128,10 @@ public class ReportController {
 
         Expense expense = new Expense();
 
-        Matcher dateMatcher = Pattern.compile("\\d{4}-\\d{2}-\\d{2}").matcher(pdfFileInText);
-        Matcher amountMatcher = Pattern.compile("(?i)\\bTotal.*\\d+").matcher(pdfFileInText);
-        Matcher shopMatcher = Pattern.compile("(?i)Shop name [a-z|0-9]+").matcher(pdfFileInText);
-        Matcher categoryMatcher = Pattern.compile("(?i)Category [a-z|0-9]+").matcher(pdfFileInText);
+        Matcher dateMatcher = Pattern.compile("\\d{4}-\\d{2}-\\d{2}",Pattern.CASE_INSENSITIVE|Pattern.MULTILINE).matcher(pdfFileInText);
+        Matcher amountMatcher = Pattern.compile("(?i)\\bTotal.*\\d+",Pattern.CASE_INSENSITIVE|Pattern.MULTILINE).matcher(pdfFileInText);
+        Matcher shopMatcher = Pattern.compile("(?i)Shop Name.*[A-Za-z0-9]",Pattern.CASE_INSENSITIVE|Pattern.MULTILINE).matcher(pdfFileInText);
+        Matcher categoryMatcher = Pattern.compile("(?i)Category.*[A-Za-z0-9]",Pattern.CASE_INSENSITIVE|Pattern.MULTILINE).matcher(pdfFileInText);
 
         if (dateMatcher.find()) {
             expense.setDate(Date.valueOf(dateMatcher.group()));
@@ -144,14 +144,21 @@ public class ReportController {
 
         if (shopMatcher.find()) {
             String[] shopNameArray = shopMatcher.group().split(" ");
+
             expense.setShopName(shopNameArray[shopNameArray.length - 1]);
         }
 
         if (categoryMatcher.find()) {
             String[] categoryArray = categoryMatcher.group().split(" ");
+            for(String cat : categoryArray){
+                System.out.println(cat);
+            }
+            
             Category category = categoryRepository.findByCategoryNameIgnoreCase(categoryArray[categoryArray.length - 1]);
             expense.setCategory(category);
         }
+
+
 
         return new ResponseEntity<>(expense ,HttpStatus.OK);
       
