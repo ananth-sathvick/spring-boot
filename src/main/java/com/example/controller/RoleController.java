@@ -33,7 +33,6 @@ public class RoleController {
 
   @GetMapping(path = "/all")
   public ResponseEntity<Iterable<Role>> getAllRoles() {
-    // This returns a JSON or XML with the users
     return new ResponseEntity<>(roleRepository.findAll(), HttpStatus.OK);
   }
 

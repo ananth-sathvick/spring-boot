@@ -236,20 +236,27 @@ public class ExpenseController {
     }
 
     @PreAuthorize("hasRole('ADMIN')") //Admin only
-    @GetMapping(path = "/netPerCategory/{d1}/{d2}") // returns a list all user details along with their total expenses
+    @GetMapping(path = "/netPerCategory/{d1}/{d2}")
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
         List<Object[]> queryResult = expenseRepository.getNetPerCategory("%", d1, d2);
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')") //Admin only
-    @GetMapping(path = "/netPerCategory") // returns a list all user details along with their total expenses
+    @GetMapping(path = "/netPerCategory") 
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory() {
         List<Object[]> queryResult = expenseRepository.getNetPerCategory("%");
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 
-    @GetMapping(path = "/myNetPerCategory") // returns a list all user details along with their total expenses
+    @PreAuthorize("hasRole('ADMIN')") //Admin only
+    @GetMapping(path = "/netPerCategory/{uid}") 
+    public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory(@PathVariable("uid") String uid) {
+        List<Object[]> queryResult = expenseRepository.getNetPerCategory(uid);
+        return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/myNetPerCategory") 
     public ResponseEntity<Iterable<HashMap<String, String>>> getMyNetPerCategory() {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername());
@@ -257,7 +264,7 @@ public class ExpenseController {
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 
-    @GetMapping(path = "/myNetPerCategory/{d1}/{d2}") // returns a list all user details along with their total expenses
+    @GetMapping(path = "/myNetPerCategory/{d1}/{d2}") 
     public ResponseEntity<Iterable<HashMap<String, String>>> getMyNetPerCategory(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername());
