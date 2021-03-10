@@ -112,7 +112,7 @@ public class ReportController {
             }
         } catch (Exception e) {
             System.out.println(e);
-            return new ResponseEntity<>(String.valueOf(count) + " expenses inserted", HttpStatus.CONFLICT); 
+            return new ResponseEntity<>("Error in pdf file uploaded", HttpStatus.CONFLICT); 
         }
         return new ResponseEntity<>(String.valueOf(count) + " expenses inserted", HttpStatus.OK);
     }
