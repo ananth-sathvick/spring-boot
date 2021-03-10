@@ -198,6 +198,7 @@ public class ExpenseController {
                 map.put("lname", (String) object[3]);
                 map.put("email", (String) object[1]);
                 map.put("roleId", String.valueOf(object[5]));
+                map.put("target", String.valueOf(object[6]));
                 map.put("netAmount", String.valueOf(object[7]));
                 result.add(map);
                 map = new HashMap<String, String>();

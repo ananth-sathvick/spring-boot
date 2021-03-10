@@ -1,15 +1,18 @@
 package com.example.controller;
 
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 
 import com.example.config.TokenProvider;
 import com.example.model.AuthToken;
 import com.example.model.ChangePassword;
+import com.example.model.Expense;
 import com.example.model.LoginUser;
 import com.example.model.Role;
 import com.example.model.User;
+import com.example.repository.ExpenseRepository;
 import com.example.repository.RoleRepository;
 import com.example.repository.UserRepository;
 import com.example.service.EmailService;
@@ -49,6 +52,9 @@ public class UserController {
 
   @Autowired
   private UserRepository userRepository;
+
+  @Autowired
+  private ExpenseRepository expenseRepository;
 
   @Autowired
   private RoleRepository roleRepository;
@@ -151,6 +157,9 @@ public class UserController {
   public ResponseEntity<String> deleteUser(@PathVariable("uid") Integer uid) {
     Optional<User> ouser = userRepository.findById(uid);
     if(ouser.isPresent()){
+      ArrayList<Expense> expenses = (ArrayList<Expense>)expenseRepository.getByUser(uid);
+      for(int i = 0; i < expenses.size(); i++)
+        expenseRepository.deleteById(expenses.get(i).getId());
       userRepository.deleteById(uid);
       return new ResponseEntity<>("Deleted", HttpStatus.OK);
     }
