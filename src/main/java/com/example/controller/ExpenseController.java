@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,8 +28,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller // This means that this class is a Controller
+@RestController // This means that this class is a Controller
 @CrossOrigin
 @RequestMapping(path = "/expense") // This means URL's start with /demo (after Application path)
 public class ExpenseController {
@@ -133,7 +133,7 @@ public class ExpenseController {
             categoryRepository.save(category);
             userRepository.save(user);
             Expense newExpense = expenseRepository.save(expense);
-            expenseService.checkTarget(user,expense); // Performs linear regression
+            expenseService.checkTarget(user,expense); // Performs target check
             return new ResponseEntity<>(newExpense, HttpStatus.CREATED);
         } else
             return new ResponseEntity<>(null, HttpStatus.CONFLICT);
@@ -152,6 +152,7 @@ public class ExpenseController {
             categoryRepository.save(category);
             userRepository.save(user);
             Expense newExpense = expenseRepository.save(expense);
+            expenseService.checkTarget(user,expense); // Performs target check
             return new ResponseEntity<>(newExpense, HttpStatus.CREATED);
         }
         else
