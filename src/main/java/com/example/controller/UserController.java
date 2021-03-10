@@ -1,6 +1,5 @@
 package com.example.controller;
 
-import java.util.ArrayList;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Map;
 
@@ -27,7 +26,13 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -66,7 +71,7 @@ public class UserController {
     return new ResponseEntity<>(new AuthToken(token), HttpStatus.OK);
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('ADMIN')") // Admin only
   @RequestMapping(value = "/register/{roleName}", method = RequestMethod.POST)
   public ResponseEntity<User> saveUser(@RequestBody User user, @PathVariable("roleName") String roleName)
       throws SQLIntegrityConstraintViolationException {
@@ -93,7 +98,7 @@ public class UserController {
 
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('ADMIN')") // Admin only
   @RequestMapping(value = "/adminping", method = RequestMethod.GET)
   public String adminPing() {
     return "Only Admins Can Read This";
@@ -128,13 +133,13 @@ public class UserController {
     }
   }
 
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ADMIN')") // Admin only
 @RequestMapping(value="/getallusers",method=RequestMethod.GET)
   public Iterable<User> getAllUsers() {
     return userRepository.getAll(1);
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('ADMIN')") // Admin only
   @RequestMapping(value = "/getalladmins", method = RequestMethod.GET)
   public Iterable<User> getAllAdmins() {
     return userRepository.getAll(2);

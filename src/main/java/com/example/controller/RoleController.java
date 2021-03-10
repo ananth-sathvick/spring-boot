@@ -23,7 +23,7 @@ public class RoleController {
              // by Spring, we will use it to handle the data
   private RoleRepository roleRepository;
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('ADMIN')") // Admin only
   @PostMapping(path = "/add") // Map ONLY POST Requests
   public ResponseEntity<Role> addNewRole(@RequestBody Role role) {
     // @ResponseBody means the returned String is the response, not a view name
@@ -37,7 +37,7 @@ public class RoleController {
     return new ResponseEntity<>(roleRepository.findAll(), HttpStatus.OK);
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('ADMIN')") // Admin only
   @DeleteMapping(path = "/delete/{id}")
   public ResponseEntity<String> deleteById(@PathVariable int id) {
     try{

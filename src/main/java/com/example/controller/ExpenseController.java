@@ -1,7 +1,6 @@
 package com.example.controller;
 
 import java.sql.Date;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,10 +9,10 @@ import java.util.Optional;
 import com.example.model.Category;
 import com.example.model.Expense;
 import com.example.model.User;
+import com.example.repository.CategoryRepository;
 import com.example.repository.ExpenseRepository;
 import com.example.repository.UserRepository;
 import com.example.service.ExpenseService;
-import com.example.repository.CategoryRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -45,13 +44,13 @@ public class ExpenseController {
     @Autowired 
     ExpenseService expenseService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')") // Admin only
     @GetMapping(path = "/all") // returns a list of all the expenses without any filter
     public ResponseEntity<Iterable<Expense>> getAllExpenses() {
         return new ResponseEntity<>(expenseRepository.findAll(), HttpStatus.OK);
     }
 
-    @GetMapping(path = "/my")
+    @GetMapping(path = "/my") // returns a list of all the expenses of the user
     public ResponseEntity<Iterable<Expense>> getAllUserExpenses() {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String email = userDetails.getUsername();
@@ -59,13 +58,13 @@ public class ExpenseController {
         return new ResponseEntity<>(expenseRepository.getByUser(uid), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')") //Admin only
     @GetMapping(path = "/findByUser/{uid}") // returns a list of expenses logged under user with (user_id = uid)
     public ResponseEntity<Iterable<Expense>> findByUser(@PathVariable("uid") Integer uid) {
         return new ResponseEntity<>(expenseRepository.getByUser(uid), HttpStatus.OK);
     	}
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')") //Admin only
     @GetMapping(path = "/find/{id}") // returns the expense with expense_id = id
     public ResponseEntity<Expense> findExpenseById(@PathVariable("id") Integer id) {
         Optional<Expense> expense = expenseRepository.findById(id);
@@ -76,8 +75,8 @@ public class ExpenseController {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
     }
 
-    @PreAuthorize("hasRole('ADMIN')") // returns a list of expenses logged under user with (user_id = cid) and category with (category_id = cid)
-    @GetMapping(path = "/findBy/{uid}/{cid}") 
+    @PreAuthorize("hasRole('ADMIN')") // Admin only
+    @GetMapping(path = "/findBy/{uid}/{cid}") // returns a list of expenses logged under user with (user_id = cid) and category with (category_id = cid)
     public ResponseEntity<Iterable<Expense>> findByUser(@PathVariable("uid") String uid, @PathVariable("uid") String cid) {
         if(uid.equals("*"))
             uid = "%";
@@ -87,7 +86,7 @@ public class ExpenseController {
         return new ResponseEntity<>(expenseRepository.getByUserCategory(uid, cid), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')") //Admin only
     @GetMapping(path = "/findBy/{uid}/{cid}/{d1}/{d2}") // returns a list of expenses logged between Date(d1) and Date(d2) (d1 < d2)
     public ResponseEntity<Iterable<Expense>> getAllExpenseBw(@PathVariable("uid") String uid, @PathVariable("cid") String cid,
         @PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
@@ -119,7 +118,7 @@ public class ExpenseController {
     }
 
 	// creates a new expense under user with (user_id = cid) and category with (category_id = cid) and returns the new expense
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')") //Admin only
 	@PostMapping(path = "/add/{uid}/{cid}")
 	public ResponseEntity<Expense> addExpense(@RequestBody Expense expense, @PathVariable("uid") Integer uid, @PathVariable("cid") Integer cid){
         if(userRepository.existsById(uid) && categoryRepository.existsById(cid)){
@@ -132,7 +131,7 @@ public class ExpenseController {
             categoryRepository.save(category);
             userRepository.save(user);
             Expense newExpense = expenseRepository.save(expense);
-            expenseService.checkTarget(user,newExpense);
+            expenseService.checkTarget(user,expense); // Performs linear regression
             return new ResponseEntity<>(newExpense, HttpStatus.CREATED);
         } else
             return new ResponseEntity<>(null, HttpStatus.CONFLICT);
@@ -207,14 +206,14 @@ public class ExpenseController {
         return result;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')") //Admin only
     @GetMapping(path = "/netPerUser/{d1}/{d2}") // returns a list all user details along with their total expenses
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerUser(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
         List<Object[]> queryResult = expenseRepository.getNetPerUser(d1, d2);
         return new ResponseEntity<>(mapUserData(queryResult), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')") //Admin only
     @GetMapping(path = "/netPerUser") // returns a list all user details along with their total expenses
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerUser() {
         List<Object[]> queryResult = expenseRepository.getNetPerUser();
@@ -236,14 +235,14 @@ public class ExpenseController {
         return result;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')") //Admin only
     @GetMapping(path = "/netPerCategory/{d1}/{d2}") // returns a list all user details along with their total expenses
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
         List<Object[]> queryResult = expenseRepository.getNetPerCategory("%", d1, d2);
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')") //Admin only
     @GetMapping(path = "/netPerCategory") // returns a list all user details along with their total expenses
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory() {
         List<Object[]> queryResult = expenseRepository.getNetPerCategory("%");

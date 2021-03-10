@@ -26,6 +26,10 @@ public class User {
 
   private String lname;
 
+  private Integer target;
+
+  
+
   @Email(message = "Email should be valid")
   @Column(unique = true)
   private String email;
@@ -40,6 +44,14 @@ public class User {
   @OneToMany(mappedBy="user")
   @JsonIgnore
   private List<Expense> expenseList;
+
+  public Integer getTarget() {
+    return this.target;
+  }
+
+  public void setTarget(Integer target) {
+    this.target = target;
+  }
 
   public List<Expense> getExpenseList() {
     return this.expenseList;
