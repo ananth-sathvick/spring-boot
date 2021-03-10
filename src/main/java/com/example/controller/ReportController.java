@@ -66,7 +66,7 @@ public class ReportController {
         Expense expense = new Expense();
 
         Matcher dateMatcher = Pattern.compile("\\d{4}-\\d{2}-\\d{2}").matcher(pdfFileInText);
-        Matcher amountMatcher = Pattern.compile("(?i)Total \\d+").matcher(pdfFileInText);
+        Matcher amountMatcher = Pattern.compile("Total \\d+").matcher(pdfFileInText);
         Matcher shopMatcher = Pattern.compile("(?i)Shop name [a-z|0-9]+").matcher(pdfFileInText);
         Matcher categoryMatcher = Pattern.compile("(?i)Category [a-z|0-9]+").matcher(pdfFileInText);
 
