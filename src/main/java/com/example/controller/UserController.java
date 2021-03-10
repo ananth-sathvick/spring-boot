@@ -2,6 +2,7 @@ package com.example.controller;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Map;
+import java.util.Optional;
 
 import com.example.config.TokenProvider;
 import com.example.model.AuthToken;
@@ -143,6 +144,17 @@ public class UserController {
   @RequestMapping(value = "/getalladmins", method = RequestMethod.GET)
   public Iterable<User> getAllAdmins() {
     return userRepository.getAll(2);
+  }
+
+  @PreAuthorize("hasRole('ADMIN')") // Admin only
+  @RequestMapping(value = "/delete/{uid}", method = RequestMethod.DELETE)
+  public ResponseEntity<String> deleteUser(@PathVariable("uid") Integer uid) {
+    Optional<User> ouser = userRepository.findById(uid);
+    if(ouser.isPresent()){
+      userRepository.deleteById(uid);
+      return new ResponseEntity<>("Deleted", HttpStatus.OK);
+    }
+    return new ResponseEntity<>("User not found", HttpStatus.CONFLICT);
   }
 
 }
