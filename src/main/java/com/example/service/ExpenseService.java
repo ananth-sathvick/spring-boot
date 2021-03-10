@@ -25,7 +25,7 @@ public class ExpenseService {
 
     public void checkTarget(User user, Expense expense) {
         int currentMonth = expenseRepository.getCurrentMonthExpenses(user.getId().toString(),expense.getDate());
-        if(user.getTarget() < (double) currentMonth) {
+        if(user.getTarget() != null && user.getTarget() < (double) currentMonth) {
             emailService.sendEmail("admin@expense.tracker.com", user.getEmail(), "Welcome to Expense Tracker",
             "<h1>Welcome to Expense Tracker</h1>"+
             "<h3>Hello, "+user.getFname()+" " +user.getLname()+ " </h3>" +

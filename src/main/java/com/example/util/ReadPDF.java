@@ -29,6 +29,7 @@ public class ReadPDF {
                 PDFTextStripper tStripper = new PDFTextStripper();
 
                 String pdfFileInText = tStripper.getText(document);
+                // System.out.println(pdfFileInText);
 
                 return pdfFileInText;
             }
