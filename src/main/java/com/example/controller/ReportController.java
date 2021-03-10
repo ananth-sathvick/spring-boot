@@ -1,10 +1,6 @@
 package com.example.controller;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -32,9 +28,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
@@ -58,7 +52,6 @@ public class ReportController {
 
     @Autowired
     ExpenseRepository expenseRepository;
-    String dir = "/home/swax/projects/Accolite Project/spring-boot/src/main/resources/static";
 
     @PostMapping("/send") 
     public ResponseEntity<String> uploadReport(@RequestBody String base64) {
@@ -75,31 +68,27 @@ public class ReportController {
         return new ResponseEntity<>("Report Sent", HttpStatus.OK);
     }
 
-    @PostMapping("/extract")
-    public ResponseEntity<?> extractExpense(@RequestParam("file") MultipartFile file) {
+    @PostMapping("/batchInsert") // for addition of expenses from pdf in batch
+    public ResponseEntity<String> extractExpense( @RequestBody String base64) {
+        if (base64.length() == 0) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+        byte[] decoded = Base64.decodeBase64(base64);
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername());
-        String filePath = dir + File.separator + user.getEmail() + File.separator+file.getOriginalFilename();
         SpreadsheetExtractionAlgorithm extractor = new SpreadsheetExtractionAlgorithm();
+        Integer count = 0;
         try {
-            File directory = new File(dir + File.separator + user.getEmail());
-            if (! directory.exists()){
-                directory.mkdir();
-                // If you require it to make the entire directory path including parents,
-                // use directory.mkdirs(); here instead.
-            }
-            Files.copy(file.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
-            File savedfile = new File(filePath);
-            PDDocument document = PDDocument.load(savedfile);
+            PDDocument document = PDDocument.load(decoded);
             ObjectExtractor oe = new ObjectExtractor(document);
             Page page = oe.extract(1);
             List<Table> table = extractor.extract(page);
-            
             for(Table tables: table) {
                 List<List<RectangularTextContainer>> rows = tables.getRows();
                 for(int i = 1; i < rows.size(); i++) {
                     List<RectangularTextContainer> cells = rows.get(i);
                     if(cells.get(0).getText().replaceAll("\\s+","").length() == 0) break;
+                    count++;
                     Expense expense = new Expense();
                     expense.setShopName(cells.get(0).getText().trim());
                     expense.setAmount(Integer.parseInt(cells.get(1).getText().replaceAll("\\s+","")));
@@ -119,16 +108,13 @@ public class ReportController {
                     categoryRepository.save(category);
                     userRepository.save(user);
                     expenseRepository.save(expense);
-                    // for(int j=0; j<cells.size(); j++) {
-                    //     System.out.print(cells.get(j).getText().replaceAll("\\s+","")+"|");
-                    // }
-                    // System.out.print("|");
                 }
             }
         } catch (Exception e) {
             System.out.println(e);
+            return new ResponseEntity<>(String.valueOf(count) + "expenses inserted", HttpStatus.CONFLICT); 
         }
-        return new ResponseEntity<>("ok" ,HttpStatus.OK);
+        return new ResponseEntity<>(String.valueOf(count) + "expenses inserted", HttpStatus.OK);
     }
 
     @PostMapping("/readfrompdf")
