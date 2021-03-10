@@ -66,7 +66,7 @@ public class ReportController {
         Expense expense = new Expense();
 
         Matcher dateMatcher = Pattern.compile("\\d{4}-\\d{2}-\\d{2}").matcher(pdfFileInText);
-        Matcher amountMatcher = Pattern.compile("Total \\d+").matcher(pdfFileInText);
+        Matcher amountMatcher = Pattern.compile("(?i)\\bTotal.*\\d+").matcher(pdfFileInText);
         Matcher shopMatcher = Pattern.compile("(?i)Shop name [a-z|0-9]+").matcher(pdfFileInText);
         Matcher categoryMatcher = Pattern.compile("(?i)Category [a-z|0-9]+").matcher(pdfFileInText);
 
@@ -75,15 +75,18 @@ public class ReportController {
         }
 
         if (amountMatcher.find()) {
-            expense.setAmount(Integer.parseInt(amountMatcher.group().split(" ")[1]));
+            String[] amountArray = amountMatcher.group().split(" ");
+            expense.setAmount(Integer.parseInt(amountArray[amountArray.length - 1]));
         }
 
         if (shopMatcher.find()) {
-            expense.setShopName(shopMatcher.group().split(" ")[2]);
+            String[] shopNameArray = shopMatcher.group().split(" ");
+            expense.setShopName(shopNameArray[shopNameArray.length - 1]);
         }
 
         if (categoryMatcher.find()) {
-            Category category = categoryRepository.findByCategoryName(categoryMatcher.group().split(" ")[1]);
+            String[] categoryArray = categoryMatcher.group().split(" ");
+            Category category = categoryRepository.findByCategoryName(categoryArray[categoryArray.length - 1]);
             expense.setCategory(category);
         }
 
