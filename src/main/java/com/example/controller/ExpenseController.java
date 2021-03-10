@@ -236,13 +236,6 @@ public class ExpenseController {
     }
 
     @PreAuthorize("hasRole('ADMIN')") //Admin only
-    @GetMapping(path = "/netPerCategory/{d1}/{d2}")
-    public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
-        List<Object[]> queryResult = expenseRepository.getNetPerCategory("%", d1, d2);
-        return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')") //Admin only
     @GetMapping(path = "/netPerCategory") 
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory() {
         List<Object[]> queryResult = expenseRepository.getNetPerCategory("%");
@@ -253,6 +246,20 @@ public class ExpenseController {
     @GetMapping(path = "/netPerCategory/{uid}") 
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory(@PathVariable("uid") String uid) {
         List<Object[]> queryResult = expenseRepository.getNetPerCategory(uid);
+        return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')") //Admin only
+    @GetMapping(path = "/netPerCategory/{d1}/{d2}")
+    public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
+        List<Object[]> queryResult = expenseRepository.getNetPerCategory("%", d1, d2);
+        return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')") //Admin only
+    @GetMapping(path = "/netPerCategory/{uid}/{d1}/{d2}")
+    public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory(@PathVariable("uid") String uid, @PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
+        List<Object[]> queryResult = expenseRepository.getNetPerCategory(uid, d1, d2);
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 
