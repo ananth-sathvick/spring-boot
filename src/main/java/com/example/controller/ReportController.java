@@ -88,7 +88,6 @@ public class ReportController {
                 for(int i = 1; i < rows.size(); i++) {
                     List<RectangularTextContainer> cells = rows.get(i);
                     if(cells.get(0).getText().replaceAll("\\s+","").length() == 0) break;
-                    count++;
                     Expense expense = new Expense();
                     expense.setShopName(cells.get(0).getText().trim());
                     expense.setAmount(Integer.parseInt(cells.get(1).getText().replaceAll("\\s+","")));
@@ -96,11 +95,12 @@ public class ReportController {
                     java.util.Date date = sdf1.parse(cells.get(2).getText().replaceAll("\\s+",""));
                     java.sql.Date sqlDate = new java.sql.Date(date.getTime());
                     expense.setDate(sqlDate);
-                    Optional<Category> ocategory = categoryRepository.findById(Integer.parseInt(cells.get(3).getText().replaceAll("\\s+","")));
-                    Category category = null;
-                    if(ocategory.isPresent()){
-                        category = ocategory.get();
+                    Category category = categoryRepository.findByCategoryNameIgnoreCase(cells.get(3).getText().replaceAll("\\s+",""));
+                    if(category != null){
+                        count++;
                     }
+                    else 
+                        continue;
                     expense.setCategory(category);
                     expense.setUser(user);
                     category.getExpenseList().add(expense);
@@ -112,9 +112,9 @@ public class ReportController {
             }
         } catch (Exception e) {
             System.out.println(e);
-            return new ResponseEntity<>(String.valueOf(count) + "expenses inserted", HttpStatus.CONFLICT); 
+            return new ResponseEntity<>(String.valueOf(count) + " expenses inserted", HttpStatus.CONFLICT); 
         }
-        return new ResponseEntity<>(String.valueOf(count) + "expenses inserted", HttpStatus.OK);
+        return new ResponseEntity<>(String.valueOf(count) + " expenses inserted", HttpStatus.OK);
     }
 
     @PostMapping("/readfrompdf")
@@ -149,7 +149,7 @@ public class ReportController {
 
         if (categoryMatcher.find()) {
             String[] categoryArray = categoryMatcher.group().split(" ");
-            Category category = categoryRepository.findByCategoryName(categoryArray[categoryArray.length - 1]);
+            Category category = categoryRepository.findByCategoryNameIgnoreCase(categoryArray[categoryArray.length - 1]);
             expense.setCategory(category);
         }
 
