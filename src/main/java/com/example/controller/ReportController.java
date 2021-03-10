@@ -149,11 +149,7 @@ public class ReportController {
         }
 
         if (categoryMatcher.find()) {
-            String[] categoryArray = categoryMatcher.group().split(" ");
-            for(String cat : categoryArray){
-                System.out.println(cat);
-            }
-            
+            String[] categoryArray = categoryMatcher.group().split(" "); 
             Category category = categoryRepository.findByCategoryNameIgnoreCase(categoryArray[categoryArray.length - 1]);
             expense.setCategory(category);
         }
