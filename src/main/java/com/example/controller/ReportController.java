@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import com.example.model.Category;
 import com.example.model.Expense;
 import com.example.model.User;
+import com.example.repository.CategoryRepository;
 import com.example.repository.UserRepository;
 import com.example.service.EmailService;
 import com.example.util.ReadPDF;
@@ -18,13 +19,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 @CrossOrigin
 @RequestMapping(path = "/report")
 public class ReportController {
@@ -34,6 +35,9 @@ public class ReportController {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    CategoryRepository categoryRepository;
 
     @PostMapping("/send")
     public ResponseEntity<String> uploadReport(@RequestBody String base64) {
@@ -79,8 +83,7 @@ public class ReportController {
         }
 
         if (categoryMatcher.find()) {
-            Category category = new Category();
-            category.setCategoryName(categoryMatcher.group().split(" ")[1]);
+            Category category = categoryRepository.findByCategoryName(categoryMatcher.group().split(" ")[1]);
             expense.setCategory(category);
         }
 
