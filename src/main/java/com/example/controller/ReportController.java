@@ -55,6 +55,7 @@ public class ReportController {
 
     @PostMapping("/send") 
     public ResponseEntity<String> uploadReport(@RequestBody String base64) {
+        // Send a pdf file to user to this registeres email
         if (base64.length() == 0) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("file is empty");
         }
@@ -119,6 +120,7 @@ public class ReportController {
 
     @PostMapping("/readfrompdf")
     public ResponseEntity<Expense> readFromPDF(@RequestBody String base64) throws IOException {
+        //Parse the pfd file and returns expense object
         if (base64.length() == 0) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }

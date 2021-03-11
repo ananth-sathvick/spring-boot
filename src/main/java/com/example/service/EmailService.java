@@ -23,6 +23,7 @@ public class EmailService {
     }
 
     public void sendEmail(String fromEmailId,String toEmailId,String subject,String body, byte[] file) {
+        //Email service to send email to a user
         String from = fromEmailId;
         String to = toEmailId;
         MimeMessageHelper helper = null;

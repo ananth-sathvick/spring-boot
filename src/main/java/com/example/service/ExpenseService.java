@@ -24,6 +24,7 @@ public class ExpenseService {
     UserRepository userRepository;
 
     public void checkTarget(User user, Expense expense) {
+        //Checks if the user has reached his target and notifies the same by an email
         int currentMonth = expenseRepository.getCurrentMonthExpenses(user.getId().toString(),expense.getDate());
         if(user.getTarget() != 0 && user.getTarget() < (double) currentMonth) {
             emailService.sendEmail("admin@expense.tracker.com", user.getEmail(), "Welcome to Expense Tracker",

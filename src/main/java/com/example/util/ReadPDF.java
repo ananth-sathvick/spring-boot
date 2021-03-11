@@ -17,6 +17,7 @@ import org.apache.pdfbox.text.PDFTextStripperByArea;
 public class ReadPDF {
 
     public String readPDF(byte[] file) throws IOException {
+        //Converts the whole pdf flie to String and returns the string
 
         try (PDDocument document = PDDocument.load(file)) {
             document.getClass();

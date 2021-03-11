@@ -32,6 +32,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     PasswordService passwordService;
 
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        //Used to get UserDeails by username
         User user = userRepository.findByEmail(username);
         if(user == null){
             throw new UsernameNotFoundException("Invalid username or password.");
@@ -41,6 +42,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     }
 
     private Set<SimpleGrantedAuthority> getAuthority(User user) {
+        //Returns roles of all users
         Set<SimpleGrantedAuthority> authorities = new HashSet<>();
         Role role = user.getRole();
         authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleName()));
@@ -48,6 +50,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     }
 
     public List<User> findAll() {
+        //Get all users
         List<User> list = new ArrayList<>();
         userRepository.findAll().iterator().forEachRemaining(list::add);
         return list;
@@ -55,6 +58,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     @Override
     public User findOne(String username) {
+        //Get user by email Id
         return userRepository.findByEmail(username);
     }
 

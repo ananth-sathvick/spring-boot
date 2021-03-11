@@ -26,6 +26,7 @@ public class PasswordService {
 
 
     public boolean changePassword(ChangePassword changePassword) {
+        //Changes password and returns true if operation is complete
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = userDetails.getUsername();
 
@@ -39,6 +40,7 @@ public class PasswordService {
     }
 
     public boolean forgotPassword(String email) {
+        //Generates new password for and sends the same by email
         User user = userRepository.findByEmail(email);
         if(user == (null))
         {
@@ -59,6 +61,7 @@ public class PasswordService {
     }
 
     public String GenerateRandomPassword(int len) {
+        //Is used to genearate random password
         String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         Random rnd = new Random();
 

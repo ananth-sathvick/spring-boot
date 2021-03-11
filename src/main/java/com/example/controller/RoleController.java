@@ -19,28 +19,27 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController // This means that this class is a Controller
 @CrossOrigin
-@RequestMapping(path = "/role") // This means URL's start with /demo (after Application path)
+@RequestMapping(path = "/role") 
 public class RoleController {
-  @Autowired // This means to get the bean called userRepository // Which is auto-generated
-             // by Spring, we will use it to handle the data
   private RoleRepository roleRepository;
 
   @PreAuthorize("hasRole('ADMIN')") // Admin only
-  @PostMapping(path = "/add") // Map ONLY POST Requests
+  @PostMapping(path = "/add") 
   public ResponseEntity<Role> addNewRole(@RequestBody Role role) {
-    // @ResponseBody means the returned String is the response, not a view name
-    // @RequestParam means it is a parameter from the GET or POST request
+    // Admin can add new Role
     return new ResponseEntity<>(roleRepository.save(role), HttpStatus.CREATED);
   }
 
   @GetMapping(path = "/all")
   public ResponseEntity<Iterable<Role>> getAllRoles() {
+    // To view all the roles
     return new ResponseEntity<>(roleRepository.findAll(), HttpStatus.OK);
   }
 
   @PreAuthorize("hasRole('ADMIN')") // Admin only
   @DeleteMapping(path = "/delete/{id}")
   public ResponseEntity<String> deleteById(@PathVariable int id) {
+    //To delete a role with particular Id = {id}
     try{
         roleRepository.deleteById(id);
     }
