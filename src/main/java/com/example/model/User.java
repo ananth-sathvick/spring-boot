@@ -26,7 +26,7 @@ public class User {
 
   private String lname;
 
-  private Integer target;
+  private Integer target=0;
 
   
 

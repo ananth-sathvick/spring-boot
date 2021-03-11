@@ -23,12 +23,14 @@ public class TargetTask {
     // Scheduled task to update the target for each user at start of each month
     @Scheduled(cron = "0 1 0 1 * ?")
     public void updateTarget() {
+        //Sets target for each user using linear regression
         ArrayList<User> users = (ArrayList<User>)userRepository.findAll();
         for(int i = 0; i < users.size(); i++) {
             ArrayList<BigInteger> expenses = expenseRepository.getExpenseAvgByMonth(users.get(i).getId().toString());
             int size = expenses.size();
             double target = 0.0;
             if (size >= 5) {
+                //users should have data for atleast 5 months
                 double[] x = new double[size], y = new double[size];
                 for (int j = 0; j < size; j++) {
                     x[j] = (double) j;

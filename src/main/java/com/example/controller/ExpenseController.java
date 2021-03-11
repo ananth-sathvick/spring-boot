@@ -139,7 +139,7 @@ public class ExpenseController {
             return new ResponseEntity<>(null, HttpStatus.CONFLICT);
 	}
 
-    @PostMapping(path = "/add/{cid}")
+    @PostMapping(path = "/add/{cid}") // Add expense of particular category for logged in user
 	public ResponseEntity<Expense> addExpense(@RequestBody Expense expense, @PathVariable("cid") Integer cid){
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername());
@@ -192,6 +192,7 @@ public class ExpenseController {
 	}
 
     private Iterable<HashMap<String, String>> mapUserData(List<Object[]> queryResult){
+        //Helper function for NetPerUser route
         HashMap<String, String> map = new HashMap<String, String>();
         ArrayList<HashMap<String, String>> result = new ArrayList<HashMap<String, String>>();
         if (queryResult != null && !queryResult.isEmpty()) {
@@ -225,6 +226,7 @@ public class ExpenseController {
     }
 
     private Iterable<HashMap<String, String>> mapCategoryData(List<Object[]> queryResult){
+        //Helper function for netPerCategory and myNetPerCategory
         HashMap<String, String> map = new HashMap<String, String>();
         ArrayList<HashMap<String, String>> result = new ArrayList<HashMap<String, String>>();
         if(queryResult != null && !queryResult.isEmpty()){
@@ -240,7 +242,7 @@ public class ExpenseController {
     }
 
     @PreAuthorize("hasRole('ADMIN')") //Admin only
-    @GetMapping(path = "/netPerCategory") 
+    @GetMapping(path = "/netPerCategory") //
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory() {
         List<Object[]> queryResult = expenseRepository.getNetPerCategory("%");
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
