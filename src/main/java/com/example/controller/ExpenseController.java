@@ -242,34 +242,34 @@ public class ExpenseController {
     }
 
     @PreAuthorize("hasRole('ADMIN')") //Admin only
-    @GetMapping(path = "/netPerCategory") //
+    @GetMapping(path = "/netPerCategory") // return a list total ammount spent on each category by all the users
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory() {
         List<Object[]> queryResult = expenseRepository.getNetPerCategory("%");
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')") //Admin only
-    @GetMapping(path = "/netPerCategory/{uid}") 
+    @GetMapping(path = "/netPerCategory/{uid}") // return a list total ammount spent on each category by the user with id = {uid}
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory(@PathVariable("uid") String uid) {
         List<Object[]> queryResult = expenseRepository.getNetPerCategory(uid);
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')") //Admin only
-    @GetMapping(path = "/netPerCategory/{d1}/{d2}")
+    @GetMapping(path = "/netPerCategory/{d1}/{d2}") // return a list total ammount spent on each category by all the users bw d1 and d2
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
         List<Object[]> queryResult = expenseRepository.getNetPerCategory("%", d1, d2);
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')") //Admin only
-    @GetMapping(path = "/netPerCategory/{uid}/{d1}/{d2}")
+    @GetMapping(path = "/netPerCategory/{uid}/{d1}/{d2}") // return a list total ammount spent on each category by user with id = {uid} bw d1 and d2
     public ResponseEntity<Iterable<HashMap<String, String>>> getNetPerCategory(@PathVariable("uid") String uid, @PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
         List<Object[]> queryResult = expenseRepository.getNetPerCategory(uid, d1, d2);
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 
-    @GetMapping(path = "/myNetPerCategory") 
+    @GetMapping(path = "/myNetPerCategory") // return a list total ammount spent on each category by the loggedin user
     public ResponseEntity<Iterable<HashMap<String, String>>> getMyNetPerCategory() {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername());
@@ -277,7 +277,7 @@ public class ExpenseController {
         return new ResponseEntity<>(mapCategoryData(queryResult), HttpStatus.OK);
     }
 
-    @GetMapping(path = "/myNetPerCategory/{d1}/{d2}") 
+    @GetMapping(path = "/myNetPerCategory/{d1}/{d2}") // return a list total ammount spent on each category by the loggedin user bw d1 and d2
     public ResponseEntity<Iterable<HashMap<String, String>>> getMyNetPerCategory(@PathVariable("d1") Date d1, @PathVariable("d2") Date d2) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername());
